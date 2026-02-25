@@ -1,0 +1,9 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/invoice-core",
+    "crates/invoice-app",
+    "crates/invoice-storage",
+    "crates/invoice-cli",
+    "crates/invoice-gui",
+]

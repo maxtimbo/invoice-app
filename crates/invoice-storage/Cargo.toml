@@ -1,0 +1,9 @@
+
+[package]
+name = "invoice-storage"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+anyhow = "1.0.102"
+rusqlite = { version = "0.38.0", features = ["bundled", "blob", "chrono"] }
