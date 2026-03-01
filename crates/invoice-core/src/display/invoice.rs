@@ -1,6 +1,7 @@
 use std::fmt;
 
-use invoice_core::models::invoice::{Invoice, InvoiceStage};
+use crate::models::invoice::Invoice;
+use crate::models::stage::InvoiceStage;
 
 impl fmt::Display for InvoiceStage {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
@@ -25,27 +26,7 @@ impl fmt::Display for Invoice {
             }
         }
 
-        write!(f, "Payment status:\t")?;
-        match &self.attributes.status {
-            PaidStatus::Waiting => {
-                write!(f, "Waiting for payment\n")?;
-            },
-            PaidStatus::PastDue => {
-                write!(f, "Payment is past due\n")?;
-            }
-            PaidStatus::Paid { date, check } => {
-                write!(f, "Paid\nDate:\t\t{}\n", date)?; 
-                if let Some(check_str) = check {
-                    write!(f, "Check:\t\t{}\n\n", check_str)?;
-                }
-            },
-            PaidStatus::Failed { date } => {
-                write!(f, "Failed\nDate:\t\t{}\n", date)?;
-            },
-            PaidStatus::Refunded { date } => {
-                write!(f, "Refunded\nDate:\t\t{}\n", date)?;
-            }
-        }
+        write!(f, "Payment status:\t{}", self.attributes.status)?;
         if let Some(notes) = &self.notes {
             write!(f, "Notes:\n{}\n\n", notes.to_string())?;
         }

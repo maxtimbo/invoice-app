@@ -1,6 +1,6 @@
 use std::fmt;
 
-use invoice_core::models::template::Template;
+use crate::models::template::Template;
 
 impl fmt::Display for Template {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {

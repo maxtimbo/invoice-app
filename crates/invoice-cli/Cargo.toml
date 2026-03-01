@@ -4,5 +4,8 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-anyhow = "1.0.82"
-inquire = { version = "0.7.5", features = ["date", "editor"] }
+anyhow = "1.0.102"
+inquire = { version = "0.9.4", features = ["date", "editor"] }
+mime_guess = "2.0.5"
+invoice-app = { path = "../invoice-app" }
+invoice-storage = { path = "../invoice-storage" }

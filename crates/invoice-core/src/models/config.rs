@@ -1,3 +1,5 @@
+
+#[derive(Debug)]
 pub struct Config {
     pub id: i64,
     pub smtp_server: String,

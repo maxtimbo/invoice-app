@@ -8,7 +8,9 @@ pub mod transactions;
 pub mod prepare;
 
 mod initdb;
+mod getters;
 mod migrate;
+mod termsid;
 
 #[derive(Debug)]
 pub struct InvoiceDB {

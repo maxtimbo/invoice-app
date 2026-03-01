@@ -1,12 +1,11 @@
 use std::fmt;
 
-use invoice_core::models::company::Company;
+use crate::models::client::Client;
 
-impl fmt::Display for Company {
+impl fmt::Display for Client {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "ID:\t\t{}\n", self.id)?;
         write!(f, "Name:\t\t{}\n", self.name)?;
-        write!(f, "Has Logo:\t{}\n", self.logo.is_some())?;
         write!(f, "Contact Information:\n{}", self.contact)
     }
 }

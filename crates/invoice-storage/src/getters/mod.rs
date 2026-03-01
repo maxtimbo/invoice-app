@@ -1,9 +1,9 @@
 pub mod client;
 pub mod company;
 pub mod config;
-pub mod contact;
 pub mod invoice;
-pub mod items;
-pub mod methods;
+pub mod item;
+pub mod method;
+pub mod shortlist;
 pub mod template;
 pub mod terms;

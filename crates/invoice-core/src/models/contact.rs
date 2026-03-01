@@ -1,3 +1,5 @@
+
+#[derive(Debug, Clone)]
 pub struct Contact {
     pub phone: Option<String>,
     pub email: Option<String>,

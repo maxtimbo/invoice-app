@@ -1,6 +1,6 @@
 use std::fmt;
 
-use invoice_core::models::config::Config;
+use crate::models::config::Config;
 
 impl fmt::Display for Config {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {

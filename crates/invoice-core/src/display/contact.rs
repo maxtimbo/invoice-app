@@ -1,5 +1,7 @@
 use std::fmt;
 
+use crate::models::contact::Contact;
+
 impl fmt::Display for Contact {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         if let Some(ref phone) = self.phone {

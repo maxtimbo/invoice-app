@@ -4,3 +4,8 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+anyhow = "1.0.102"
+headless_chrome = "1.0.21"
+tera = "1.20.1"
+directories = "5.0.1"
+invoice-core = { path = "../invoice-core" }

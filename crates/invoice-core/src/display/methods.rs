@@ -1,6 +1,6 @@
 use std::fmt;
 
-use invoice_core::models::methods::Methods;
+use crate::models::methods::Methods;
 
 impl fmt::Display for Methods {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {

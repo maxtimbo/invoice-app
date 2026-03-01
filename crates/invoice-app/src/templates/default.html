@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <style type="text/css">
+            @media print {
+                body, .wrapper {
+                    width: 100%;
+                    print-color-adjust: exact;
+                }
+                .header {
+                    float: none;
+                    display: block;
+                }
+                #parties {
+                    width: 35%;
+                }
+                #details {
+                    text-align: left;
+                    float: none;
+                    width: 65%;
+                }
+                #items tbody tr:nth-child(even) {
+                    background-color: #a9a9a9 !important;
+                }
+                
+                #items tbody tr:nth-child(odd) {
+                    background-color: #f2f2f2 !important;
+                }
+                #footer, #itemized, #header {
+                    break-inside: avoid;
+                }
+                .wrapper {
+                    max-height: 100vh;
+                    overflow: hidden;
+                }
+            }
+            @page {
+                size: auto;
+                margin: 0;
+            }
+            body, html {
+                margin: 0;
+                padding: 0;
+                height: 100%
+            }
+            .wrapper {
+                font-family: monospace;
+                max-width: 960px;
+                margin: 0 auto;
+                padding: 50px;
+                font-size: 16px;
+                box-sizing: border-box;
+            }
+            
+            img {
+                width: 33%;
+            }
+            .contact p {
+                line-height: 1px;
+            }
+            .contact h4 {
+                line-height: 2px;
+            }
+            #client, #company-contact {
+                margin: 50px 0;
+            }
+            #client h5 {
+                line-height: 1px;
+            }
+            #header {
+                display: flex;
+                justify-content: space-between;
+                width: 100%;
+            }
+
+            .parties, .details {
+                flex: 1;
+                padding: 0 20px;
+            }
+            
+            #details {
+                text-align: right;
+                float: right;
+                width: 50%;
+                display: flex;
+                flex-direction: column;
+                align-items: end;
+                justify-content: space-between;
+            }
+            #summary {
+                float: right;
+            }
+            #balance-due td {
+                background-color: #a9a9a9;
+                padding-top: 10px !important;
+                padding-bottom: 10px !important;
+            }
+            #balance-due td:nth-child(even) {
+                padding-right: 10px !important;
+            }
+            #itemized {
+                width: 100%;
+            }
+            
+            #items thead {
+                background-color:  #262b27;
+                color: white; 
+                border-radius: 10px;
+                overflow: hidden;
+            }
+            #summary-table td {
+                padding: 0 0 0 40px;
+            }
+            #summary-table {
+                border-collapse: collapse;
+            }
+            #items td, th {
+                padding: 15px; 
+            }
+            
+            #items td:first-child, th:first-child {
+                padding-left: 30px;
+            }
+            
+            #items td:last-child, th:last-child {
+                padding-right: 30px;
+            }
+            
+            #items tbody tr:nth-child(even) {
+                background-color: #a9a9a9;
+            }
+            
+            #items tbody tr:nth-child(odd) {
+                background-color: #f2f2f2;
+            }
+            
+            .col1 {
+                text-align: left;
+                width: 55%;
+            }
+            
+            .col2, .col3, .col4 {
+                text-align: right;
+            }
+            
+            #items {
+                width:100%;
+                border-collapse: collapse;
+                border-spacing: 0;
+            }
+            
+            #payment-methods {
+                width: 100%;
+                float: left;
+                margin-left: 30px;
+            }
+            
+            #payment-methods p, h5 {
+                line-height: 1px;
+            }
+
+            #payment-methods img {
+                padding: .5em;
+                width: 100%;
+                max-width: 150px;
+                max-height: 150px;
+            }
+            
+            #totals {
+                width: 30%;
+                float: right;
+            }
+            
+            #totals-table {
+                width:100%;
+                float: right;
+                border-collapse: collapse;
+            }
+            
+            #totals-table td:first-child {
+                text-align: left;
+                padding-left: 30px;
+            }
+            
+            #totals-table td:last-child {
+                text-align: right;
+                padding-right: 30px;
+            }
+
+            #footer {
+                display: flex;
+            }
+
+            #notes {
+                width: 100%;
+            }
+
+            #to-pay {
+                display: flex;
+                width: 100%;
+                justify-content: space-between;
+            }
+            #items, #totals-table {
+                width: 100%;
+                border-collapse: collapse;
+                margin-top: 20px;
+            }
+            #status-container {
+                width: 100%;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+            }
+            #payment-status {
+                justify-content: center;
+            }
+            #status-details {
+                width: 100%;
+                text-align: left;
+            }
+            @media print {
+                body {
+                    zoom: 0.95;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <div class="wrapper">
+            <div id="header" class="header">
+                <div id="parties" class="header contact">
+                    <div id="company" class="header">
+                        {% if template.company.logo %}
+                            <img src="{{ template.company.logo }}" />
+                        {% endif %}
+                        <div id="company-contact">
+                            <h4>{{ template.company.name }}</h4>
+                            {% if template.company.contact.phone %}
+                                <p>{{ template.company.contact.phone }}</p>
+                            {% endif %}
+                            {% if template.company.contact.email %}
+                                <p>{{ template.company.contact.email }}</p>
+                            {% endif %}
+                            {% if template.company.contact.addr1 %}
+                                <p>{{ template.company.contact.addr1 }}</p>
+                            {% endif %}
+                            {% if template.company.contact.add2 %}
+                                <p>{{ template.company.contact.addr2 }}</p>
+                            {% endif %}
+                            {% if template.company.contact.city %}
+                                <p>
+                                    {{ template.company.contact.city }},{% if template.company.contact.state %} {{ template.company.contact.state }}{% endif %}{% if template.company.contact.zip %} {{ template.company.contact.zip }}{% endif %}
+                                </p>
+                            {% endif %}
+                        </div>
+
+                    </div>
+
+                    <div id="client">
+                        <h5>Bill To:</h5>
+                        <div id="client-contact">
+                            <h4>{{ template.client.name }}</h4>
+                            {% if template.client.contact.phone %}
+                                <p>{{ template.client.contact.phone }}</p>
+                            {% endif %}
+                            {% if template.client.contact.email %}
+                                <p>{{ template.client.contact.email }}</p>
+                            {% endif %}
+                            {% if template.client.contact.addr1 %}
+                                <p>{{ template.client.contact.addr1 }}</p>
+                            {% endif %}
+                            {% if template.client.contact.add2 %}
+                                <p>{{ template.client.contact.add2 }}</p>
+                            {% endif %}
+                            {% if template.client.contact.city %}
+                                <p>
+                                    {{ template.client.contact.city }},
+                                    {% if template.client.contact.state %}
+                                        {{ template.client.contact.state }}&nbsp;
+                                    {% endif %}
+                                    {% if template.client.contact.zip %}
+                                        {{ template.client.contact.zip }}
+                                    {% endif %}
+                                </p>
+                            {% endif %}
+                        </div>
+                    </div> 
+                </div>
+                <div id="details">
+                    <div id="invoice-id">
+                        <h1>{{ invoice_stage }}</h1>
+                        <h5>#{{ id }}</h5>
+                    </div>
+                    <div id="summary">
+                        <table id="summary-table">
+                            <tr id="issued-date">
+                                <td>Date:</td>
+                                <td>{{ date }}</td>
+                            </tr>
+                            <tr id="terms">
+                                <td>Payment Terms:</td>
+                                <td>{{ template.terms.name }}</td>
+                            </tr>
+                            <tr id="due-date">
+                                <td>Due Date:</td>
+                                <td>{{ due_date }}</td>
+                            </tr>
+                            <tr id="balance-due">
+                                <td>Balance Due:</td>
+                                <td>${{ total }}</td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div id="status-container">
+                        {% if status %}
+                            <h1 id="payment-status">{{ status }}</h1>
+                            <table id="status-details">
+                                <thead>
+                                    <tr>
+                                    {% if status_date %}
+                                        <td>Date</td>
+                                    {% endif %}
+                                    {% if status_check %}
+                                        <td>Check</td>
+                                    {% endif %}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                    {% if status_date %}
+                                        <td>{{ status_date }}</td>
+                                    {% endif %}
+                                    {% if status_check %}
+                                        <td>{{ status_check }}</td>
+                                    {% endif %}
+                                    </tr>
+                                </tbody>
+                            </table>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            <div id="itemized">
+                <table id="items">
+                    <thead>
+                        <tr>
+                            <th class="col1">Item</th>
+                            <th class="col2">Quantity</th>
+                            <th class="col3">Rate</th>
+                            <th class="col4">Subtotal</th>  
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in items %}
+                            <tr>
+                                <td class="col1">{{ item.name }}</td>
+                                <td class="col2">{{ item.quantity }}</td>
+                                <td class="col3">${{ item.rate }}</td>
+                                <td class="col4">${{ item.subtotal }}</td>
+                            </tr>
+                        {% endfor %}
+                        <tr>
+                            <td class="col1"></td>
+                            <td class="col2"></td>
+                            <td class="col3">Total:</td>
+                            <td class="col4">${{ total }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <div id="footer">
+                {% if show_methods %}
+                <div id="to-pay">
+                    <div id="payment-methods">
+                        <h3>Payment Methods:</h3>
+                        {% for method in template.methods %}
+                            {% if method.link and method.qr %}
+                                <a href="{{ method.link }}"><img src="{{ method.qr }}" /></a>
+                            {% elif method.link and not method.qr %}
+                                <a href="{{ method.link }}">{{ method.name }}</a>
+                            {% elif method.qr and not method.link %}
+                                <p>{{ method.name }}</p>
+                                <img src="{{ method.qr }}" />
+                            {% else %}
+                                <p>{{ method.name }}</p>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if show_notes %}
+                <div id="notes">
+                    <h3>Notes:</h3>
+                    {{ notes | safe }}
+                </div>
+                {% endif %}
+            </div>
+
+        </div>
+    </body>
+    <script type="text/javascript">
+        window.print();
+    </script>
+</html>

@@ -1,5 +1,6 @@
 pub mod models;
-pub mod validators;
+pub mod display;
+mod errors;
 
 #[macro_export]
 macro_rules! decimal_to_i64 {
