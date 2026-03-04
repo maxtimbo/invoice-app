@@ -1,12 +1,18 @@
 use anyhow::Result;
 
 use invoice_app::commands::paths::Paths;
-use invoice_storage::db::InvoiceDB;
+use invoice_storage::sqlite::SqliteStorage;
+use invoice_app::ports::repos::client_repo::ClientRepo;
 
-fn main() -> Result<()> {
+#[tokio::main]
+async fn main() -> Result<()> {
     let paths = Paths::init()?;
-    let mut db = InvoiceDB::open(paths.db, 2)?;
-    let renderer = TemplateEngine::new(&paths.templates)?;
-    Cli::to_cmd(&mut db, &renderer)?;
+    let db = SqliteStorage::connect(paths.db.to_str().unwrap()).await?;
+    let items = db.list().await?;
+    for i in items {
+        println!("{}: {}", i.id, i.name);
+    }
+    //let renderer = TemplateEngine::new(&paths.templates)?;
+    //Cli::to_cmd(&mut db, &renderer)?;
     Ok(())
 }

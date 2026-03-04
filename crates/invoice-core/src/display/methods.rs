@@ -1,8 +1,8 @@
 use std::fmt;
 
-use crate::models::methods::Methods;
+use crate::models::method::Method;
 
-impl fmt::Display for Methods {
+impl fmt::Display for Method {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "ID:\t\t{}\n", self.id)?;
         write!(f, "Name:\t\t{}\n", self.name)?;

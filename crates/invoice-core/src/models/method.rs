@@ -1,7 +1,7 @@
 use crate::models::ids::MethodId;
 
 #[derive(Debug, Clone)]
-pub struct Methods {
+pub struct Method {
     pub id: MethodId,
     pub name: String,
     pub link: Option<String>,

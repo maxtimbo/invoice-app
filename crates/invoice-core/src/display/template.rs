@@ -11,7 +11,7 @@ impl fmt::Display for Template {
         write!(f, "Terms:\n")?;
         write!(f, "{}\n", self.terms)?;
         write!(f, "Payment Methods:\n")?;
-        for method in &self.methods {
+        for method in &self.method {
             write!(f, "{}\n", method)?;
         }
         Ok(())
