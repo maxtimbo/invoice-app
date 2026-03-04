@@ -13,30 +13,30 @@ use invoice_core::models::{
 };
 
 #[derive(Debug, Clone)]
-pub struct CreateTemplate {
+pub struct CreateTemplateSkel {
     pub name: String,
     pub company: CompanyId,
     pub client: ClientId,
     pub terms: TermsId,
-    pub method: Vec<MethodId>,
+    pub methods: Vec<MethodId>,
 }
 
 #[derive(Debug, Clone, Default)]
-pub struct UpdateTemplate {
+pub struct UpdateTemplateSkel {
     pub name: Option<String>,
     pub company: Option<CompanyId>,
     pub client: Option<ClientId>,
     pub terms: Option<TermsId>,
-    pub method: Option<Vec<MethodId>>,
+    pub methods: Option<Vec<MethodId>>,
 }
 
 #[async_trait]
-pub trait TemplateRepo: Send + Sync {
+pub trait TemplateSkelRepo: Send + Sync {
     async fn get(&self, id: TemplateId) -> Result<Option<TemplateSkel>>;
     async fn list(&self) -> Result<Vec<TemplateSkel>>;
 
-    async fn create(&self, input: CreateTemplate) -> Result<TemplateId>;
-    async fn update(&self, id: TemplateId, patch: UpdateTemplate) -> Result<()>;
+    async fn create(&self, input: CreateTemplateSkel) -> Result<TemplateId>;
+    async fn update(&self, id: TemplateId, patch: UpdateTemplateSkel) -> Result<()>;
     async fn delete(&self, id: TemplateId) -> Result<bool>;
 }
 

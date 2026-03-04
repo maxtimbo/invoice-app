@@ -15,6 +15,7 @@ sqlx = { version = "0.7", features = [
     "rust_decimal"
 ]}
 tokio = { version = "1", features = ["rt-multi-thread", "macros"]}
+serde_json = "1.0.116"
 async-trait = "0.1.89"
 rust_decimal = "1.40.0"
 invoice-core = { path = "../invoice-core" }

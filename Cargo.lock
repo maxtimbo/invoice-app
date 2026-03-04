@@ -1220,6 +1220,7 @@ dependencies = [
  "invoice-app",
  "invoice-core",
  "rust_decimal",
+ "serde_json",
  "sqlx",
  "tokio",
 ]
