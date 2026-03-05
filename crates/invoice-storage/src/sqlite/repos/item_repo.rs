@@ -16,7 +16,7 @@ use invoice_core::models::{
 
 #[async_trait]
 impl ItemRepo for SqliteStorage {
-    async fn get(&self, id: ItemId) -> Result<Option<Item>> {
+    async fn get_item(&self, id: ItemId) -> Result<Option<Item>> {
         let row = sqlx::query("SELECT id, name, rate FROM items WHERE id = ?")
             .bind(id.0)
             .fetch_optional(&self.pool)
@@ -27,7 +27,7 @@ impl ItemRepo for SqliteStorage {
             rate: Currency::from_cents(r.get::<i64, _>("rate")),
         }))
     }
-    async fn list(&self) -> Result<Vec<Item>> {
+    async fn list_item(&self) -> Result<Vec<Item>> {
         let rows = sqlx::query("SELECT id, name, rate FROM items ORDER BY name")
             .fetch_all(&self.pool)
             .await?;
@@ -39,7 +39,7 @@ impl ItemRepo for SqliteStorage {
             })
             .collect())
     }
-    async fn create(&self, input: CreateItem) -> Result<ItemId> {
+    async fn create_item(&self, input: CreateItem) -> Result<ItemId> {
         let res = sqlx::query("INSERT INTO items (name, rate) VALUES (?, ?)")
             .bind(input.name)
             .bind(input.rate.to_cents())
@@ -47,8 +47,8 @@ impl ItemRepo for SqliteStorage {
             .await?;
         Ok(ItemId(res.last_insert_rowid()))
     }
-    async fn update(&self, id: ItemId, patch: UpdateItem) -> Result<()> {
-        let mut item = self.get(id).await?.ok_or_else(|| anyhow!("item {} not found", id.0))?;
+    async fn update_item(&self, id: ItemId, patch: UpdateItem) -> Result<()> {
+        let mut item = self.get_item(id).await?.ok_or_else(|| anyhow!("item {} not found", id.0))?;
         if let Some(name) = patch.name {
             item.name = name;
         }
@@ -63,7 +63,7 @@ impl ItemRepo for SqliteStorage {
             .await?;
         Ok(())
     }
-    async fn delete(&self, id: ItemId) -> Result<bool> {
+    async fn delete_item(&self, id: ItemId) -> Result<bool> {
         let res = sqlx::query("DELETE FROM items WHERE id = ?")
             .bind(id.0)
             .execute(&self.pool)

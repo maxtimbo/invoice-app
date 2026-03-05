@@ -17,11 +17,11 @@ pub struct UpdateTerms {
 
 #[async_trait]
 pub trait TermsRepo: Send + Sync {
-    async fn get(&self, id: TermsId) -> Result<Option<Terms>>;
-    async fn list(&self) -> Result<Vec<Terms>>;
+    async fn get_terms(&self, id: TermsId) -> Result<Option<Terms>>;
+    async fn list_terms(&self) -> Result<Vec<Terms>>;
 
-    async fn create(&self, input: CreateTerms) -> Result<TermsId>;
-    async fn update(&self, id: TermsId, patch: UpdateTerms) -> Result<()>;
+    async fn create_terms(&self, input: CreateTerms) -> Result<TermsId>;
+    async fn update_terms(&self, id: TermsId, patch: UpdateTerms) -> Result<()>;
 
-    async fn delete(&self, id: TermsId) -> Result<bool>;
+    async fn delete_terms(&self, id: TermsId) -> Result<bool>;
 }

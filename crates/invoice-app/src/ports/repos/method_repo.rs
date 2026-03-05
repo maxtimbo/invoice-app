@@ -19,10 +19,10 @@ pub struct UpdateMethod {
 
 #[async_trait]
 pub trait MethodRepo: Send + Sync {
-    async fn get(&self, id: MethodId) -> Result<Option<Method>>;
-    async fn list(&self) -> Result<Vec<Method>>;
+    async fn get_method(&self, id: MethodId) -> Result<Option<Method>>;
+    async fn list_method(&self) -> Result<Vec<Method>>;
 
-    async fn create(&self, input: CreateMethod) -> Result<MethodId>;
-    async fn update(&self, id: MethodId, patch: UpdateMethod) -> Result<()>;
-    async fn delete(&self, id: MethodId) -> Result<bool>;
+    async fn create_method(&self, input: CreateMethod) -> Result<MethodId>;
+    async fn update_method(&self, id: MethodId, patch: UpdateMethod) -> Result<()>;
+    async fn delete_method(&self, id: MethodId) -> Result<bool>;
 }

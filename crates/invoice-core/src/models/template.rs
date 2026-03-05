@@ -14,3 +14,8 @@ pub struct Template {
     pub method: Vec<Method>,
 }
 
+#[derive(Debug, Clone)]
+pub struct TemplateSummary {
+    pub id: TemplateId,
+    pub name: String,
+}

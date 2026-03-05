@@ -21,10 +21,10 @@ pub struct UpdateClient {
 
 #[async_trait]
 pub trait ClientRepo: Send + Sync {
-    async fn get(&self, id: ClientId) -> Result<Option<Client>>;
-    async fn list(&self) -> Result<Vec<Client>>;
+    async fn get_client(&self, id: ClientId) -> Result<Option<Client>>;
+    async fn list_client(&self) -> Result<Vec<Client>>;
 
-    async fn create(&self, input: CreateClient) -> Result<ClientId>;
-    async fn update(&self, id: ClientId, patch: UpdateClient) -> Result<()>;
-    async fn delete(&self, id: ClientId) -> Result<bool>;
+    async fn create_client(&self, input: CreateClient) -> Result<ClientId>;
+    async fn update_client(&self, id: ClientId, patch: UpdateClient) -> Result<()>;
+    async fn delete_client(&self, id: ClientId) -> Result<bool>;
 }

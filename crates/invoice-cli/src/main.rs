@@ -8,7 +8,7 @@ use invoice_app::ports::repos::client_repo::ClientRepo;
 async fn main() -> Result<()> {
     let paths = Paths::init()?;
     let db = SqliteStorage::connect(paths.db.to_str().unwrap()).await?;
-    let items = db.list().await?;
+    let items = db.list_client().await?;
     for i in items {
         println!("{}: {}", i.id, i.name);
     }

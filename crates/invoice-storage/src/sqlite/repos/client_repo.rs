@@ -18,7 +18,7 @@ use invoice_core::models::{
 
 #[async_trait]
 impl ClientRepo for SqliteStorage {
-    async fn get(&self, id: ClientId) -> Result<Option<Client>> {
+    async fn get_client(&self, id: ClientId) -> Result<Option<Client>> {
         let row = sqlx::query(
             "SELECT id, name, phone, email, addr1, addr2, city, state, zip
              FROM client WHERE id = ?"
@@ -41,7 +41,7 @@ impl ClientRepo for SqliteStorage {
             },
         }))
     }
-    async fn list(&self) -> Result<Vec<Client>> {
+    async fn list_client(&self) -> Result<Vec<Client>> {
         let rows = sqlx::query(
             "SELECT id, name, phone, email, addr1, addr2, city, state, zip
             FROM client ORDER BY id")
@@ -63,7 +63,7 @@ impl ClientRepo for SqliteStorage {
             })
             .collect())
     }
-    async fn create(&self, input: CreateClient) -> Result<ClientId> {
+    async fn create_client(&self, input: CreateClient) -> Result<ClientId> {
         let c = input.contact;
 
         let res = sqlx::query(
@@ -82,8 +82,8 @@ impl ClientRepo for SqliteStorage {
             .await?;
         Ok(ClientId(res.last_insert_rowid()))
     }
-    async fn update(&self, id: ClientId, patch: UpdateClient) -> Result<()> {
-        let mut client = self.get(id).await?.ok_or_else(|| anyhow!("Client {} not found", id.0))?;
+    async fn update_client(&self, id: ClientId, patch: UpdateClient) -> Result<()> {
+        let mut client = self.get_client(id).await?.ok_or_else(|| anyhow!("Client {} not found", id.0))?;
 
         if let Some(name) = patch.name {
             client.name = name;
@@ -119,7 +119,7 @@ impl ClientRepo for SqliteStorage {
             .await?;
         Ok(())
     }
-    async fn delete(&self, id: ClientId) -> Result<bool> {
+    async fn delete_client(&self, id: ClientId) -> Result<bool> {
         let res = sqlx::query("DELETE FROM client WHERE id = ?")
             .bind(id.0)
             .execute(&self.pool)

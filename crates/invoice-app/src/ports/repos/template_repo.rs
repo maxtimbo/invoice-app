@@ -32,12 +32,12 @@ pub struct UpdateTemplate {
 
 #[async_trait]
 pub trait TemplateRepo: Send + Sync {
-    async fn get(&self, id: TemplateId) -> Result<Option<Template>>;
-    async fn list(&self) -> Result<Vec<Template>>;
+    async fn get_template(&self, id: TemplateId) -> Result<Option<Template>>;
+    async fn list_template(&self) -> Result<Vec<Template>>;
 
-    async fn create(&self, input: CreateTemplate) -> Result<TemplateId>;
-    async fn update(&self, id: TemplateId, patch: UpdateTemplate) -> Result<()>;
-    async fn delete(&self, id: TemplateId) -> Result<bool>;
+    async fn create_template(&self, input: CreateTemplate) -> Result<TemplateId>;
+    async fn update_template(&self, id: TemplateId, patch: UpdateTemplate) -> Result<()>;
+    async fn delete_template(&self, id: TemplateId) -> Result<bool>;
 }
 
 

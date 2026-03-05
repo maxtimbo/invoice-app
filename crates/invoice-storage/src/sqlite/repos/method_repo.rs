@@ -15,7 +15,7 @@ use invoice_core::models::{
 
 #[async_trait]
 impl MethodRepo for SqliteStorage {
-    async fn get(&self, id: MethodId) -> Result<Option<Method>> {
+    async fn get_method(&self, id: MethodId) -> Result<Option<Method>> {
         let row = sqlx::query("SELECT id, name, link, qr FROM methods WHERE id = ?")
             .bind(id.0)
             .fetch_optional(&self.pool)
@@ -28,7 +28,7 @@ impl MethodRepo for SqliteStorage {
         }))
     }
 
-    async fn list(&self) -> Result<Vec<Method>> {
+    async fn list_method(&self) -> Result<Vec<Method>> {
         let rows = sqlx::query("SELECT id, name, link, qr FROM methods ORDER BY id")
             .fetch_all(&self.pool)
             .await?;
@@ -41,7 +41,7 @@ impl MethodRepo for SqliteStorage {
             })
             .collect())
     }
-    async fn create(&self, input: CreateMethod) -> Result<MethodId> {
+    async fn create_method(&self, input: CreateMethod) -> Result<MethodId> {
         let res = sqlx::query("INSERT INTO methods (name, link, qr) VALUES (?, ?, ?)")
             .bind(input.name)
             .bind(input.link)
@@ -50,8 +50,8 @@ impl MethodRepo for SqliteStorage {
             .await?;
         Ok(MethodId(res.last_insert_rowid()))
     }
-    async fn update(&self, id: MethodId, patch: UpdateMethod) -> Result<()> {
-        let mut method = self.get(id).await?.ok_or_else(|| anyhow!("Method {} not found", id.0))?;
+    async fn update_method(&self, id: MethodId, patch: UpdateMethod) -> Result<()> {
+        let mut method = self.get_method(id).await?.ok_or_else(|| anyhow!("Method {} not found", id.0))?;
         if let Some(name) = patch.name {
             method.name = name;
         }
@@ -71,7 +71,7 @@ impl MethodRepo for SqliteStorage {
             .await?;
         Ok(())
     }
-    async fn delete(&self, id: MethodId) -> Result<bool> {
+    async fn delete_method(&self, id: MethodId) -> Result<bool> {
         let res = sqlx::query("DELETE FROM methods WHERE id = ?")
             .bind(id.0)
             .execute(&self.pool)

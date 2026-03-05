@@ -1,4 +1,5 @@
-use crate::models::ids::{
+
+use invoice_core::models::ids::{
     CompanyId,
     ClientId,
     TermsId,
@@ -7,7 +8,7 @@ use crate::models::ids::{
 };
 
 #[derive(Debug, Clone)]
-pub struct TemplateSkel {
+pub(crate) struct TemplateSkel {
     pub id: TemplateId,
     pub name: String,
     pub company_id: CompanyId,

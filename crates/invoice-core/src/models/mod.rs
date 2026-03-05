@@ -14,5 +14,4 @@ pub mod stage;
 pub mod status;
 pub mod summary;
 pub mod template;
-pub mod template_skel;
 pub mod terms;

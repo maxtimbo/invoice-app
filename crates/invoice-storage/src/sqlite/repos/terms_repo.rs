@@ -11,7 +11,7 @@ use invoice_core::models::{
 
 #[async_trait]
 impl TermsRepo for SqliteStorage {
-    async fn get(&self, id: TermsId) -> Result<Option<Terms>> {
+    async fn get_terms(&self, id: TermsId) -> Result<Option<Terms>> {
         let row = sqlx::query("SELECT id, name, due FROM terms WHERE id = ?")
             .bind(id.0)
             .fetch_optional(&self.pool)
@@ -22,7 +22,7 @@ impl TermsRepo for SqliteStorage {
             due: r.get::<i64, _>("due"),
         }))
     }
-    async fn list(&self) -> Result<Vec<Terms>> {
+    async fn list_terms(&self) -> Result<Vec<Terms>> {
         let rows = sqlx::query("SELECT id, name, due FROM terms ORDER BY id")
             .fetch_all(&self.pool)
             .await?;
@@ -34,7 +34,7 @@ impl TermsRepo for SqliteStorage {
             })
             .collect())
     }
-    async fn create(&self, input: CreateTerms) -> Result<TermsId> {
+    async fn create_terms(&self, input: CreateTerms) -> Result<TermsId> {
         let res = sqlx::query("INSERT INTO terms (name, due) VALUES (?, ?)")
             .bind(input.name)
             .bind(input.due)
@@ -42,8 +42,8 @@ impl TermsRepo for SqliteStorage {
             .await?;
         Ok(TermsId(res.last_insert_rowid()))
     }
-    async fn update(&self, id: TermsId, patch: UpdateTerms) -> Result<()> {
-        let mut terms = self.get(id).await?.ok_or_else(|| anyhow!("terms {} not found", id.0))?;
+    async fn update_terms(&self, id: TermsId, patch: UpdateTerms) -> Result<()> {
+        let mut terms = self.get_terms(id).await?.ok_or_else(|| anyhow!("terms {} not found", id.0))?;
         if let Some(name) = patch.name {
             terms.name = name;
         }
@@ -59,7 +59,7 @@ impl TermsRepo for SqliteStorage {
             .await?;
         Ok(())
     }
-    async fn delete(&self, id: TermsId) -> Result<bool> {
+    async fn delete_terms(&self, id: TermsId) -> Result<bool> {
         let res = sqlx::query("DELETE FROM terms WHERE id = ?")
             .bind(id.0)
             .execute(&self.pool)

@@ -23,10 +23,10 @@ pub struct UpdateCompany {
 
 #[async_trait]
 pub trait CompanyRepo: Send + Sync {
-    async fn get(&self, id: CompanyId) -> Result<Option<Company>>;
-    async fn list(&self) -> Result<Vec<Company>>;
+    async fn get_company(&self, id: CompanyId) -> Result<Option<Company>>;
+    async fn list_company(&self) -> Result<Vec<Company>>;
 
-    async fn create(&self, input: CreateCompany) -> Result<CompanyId>;
-    async fn update(&self, id: CompanyId, patch: UpdateCompany) -> Result<()>;
-    async fn delete(&self, id: CompanyId) -> Result<bool>;
+    async fn create_company(&self, input: CreateCompany) -> Result<CompanyId>;
+    async fn update_company(&self, id: CompanyId, patch: UpdateCompany) -> Result<()>;
+    async fn delete_company(&self, id: CompanyId) -> Result<bool>;
 }

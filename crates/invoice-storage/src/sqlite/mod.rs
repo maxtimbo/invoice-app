@@ -2,6 +2,7 @@ use sqlx::SqlitePool;
 use anyhow::Result;
 
 mod repos;
+mod models;
 
 #[derive(Clone)]
 pub struct SqliteStorage {

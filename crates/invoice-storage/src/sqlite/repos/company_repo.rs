@@ -17,7 +17,7 @@ use invoice_core::models::{
 
 #[async_trait]
 impl CompanyRepo for SqliteStorage {
-    async fn get(&self, id: CompanyId) -> Result<Option<Company>> {
+    async fn get_company(&self, id: CompanyId) -> Result<Option<Company>> {
         let row = sqlx::query(
             "SELECT id, name, logo, phone, email, addr1, addr2, city, state, zip
              FROM company WHERE id = ?"
@@ -41,7 +41,7 @@ impl CompanyRepo for SqliteStorage {
             },
         }))
     }
-    async fn list(&self) -> Result<Vec<Company>> {
+    async fn list_company(&self) -> Result<Vec<Company>> {
         let rows = sqlx::query(
             "SELECT id, name, logo, phone, email, addr1, addr2, city, state, zip
             FROM company ORDER BY id")
@@ -64,7 +64,7 @@ impl CompanyRepo for SqliteStorage {
             })
             .collect())
     }
-    async fn create(&self, input: CreateCompany) -> Result<CompanyId> {
+    async fn create_company(&self, input: CreateCompany) -> Result<CompanyId> {
         let c = input.contact;
 
         let res = sqlx::query(
@@ -84,8 +84,8 @@ impl CompanyRepo for SqliteStorage {
             .await?;
         Ok(CompanyId(res.last_insert_rowid()))
     }
-    async fn update(&self, id: CompanyId, patch: UpdateCompany) -> Result<()> {
-        let mut company = self.get(id).await?.ok_or_else(|| anyhow!("Company {} not found", id.0))?;
+    async fn update_company(&self, id: CompanyId, patch: UpdateCompany) -> Result<()> {
+        let mut company = self.get_company(id).await?.ok_or_else(|| anyhow!("Company {} not found", id.0))?;
 
         if let Some(name) = patch.name {
             company.name = name;
@@ -123,7 +123,7 @@ impl CompanyRepo for SqliteStorage {
             .await?;
         Ok(())
     }
-    async fn delete(&self, id: CompanyId) -> Result<bool> {
+    async fn delete_company(&self, id: CompanyId) -> Result<bool> {
         let res = sqlx::query("DELETE FROM company WHERE id = ?")
             .bind(id.0)
             .execute(&self.pool)
