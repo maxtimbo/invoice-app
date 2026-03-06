@@ -2,7 +2,7 @@ use crate::models::ids::ItemId;
 use crate::models::currency::Currency;
 use crate::models::quantity::Quantity;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Item {
     pub id: ItemId,
     pub name: String,

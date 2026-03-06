@@ -1,7 +1,7 @@
 use rust_decimal::Decimal;
 use rust_decimal::prelude::ToPrimitive;
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Currency(pub Decimal);
 
 impl Currency {

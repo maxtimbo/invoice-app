@@ -1,3 +1,4 @@
+pub mod invoice_repo;
 pub mod item_repo;
 pub mod terms_repo;
 pub mod method_repo;
