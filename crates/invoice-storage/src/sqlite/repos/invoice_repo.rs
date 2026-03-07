@@ -71,7 +71,7 @@ impl SqliteStorage {
 
         let status = match status_str.as_str() {
             "Waiting" => PaidStatus::Waiting,
-            "PastDue" => PaidStatus::PastDue,
+            "Past Due" => PaidStatus::PastDue,
             "Paid" => {
                 let date = NaiveDate::parse_from_str(
                     &status_date.ok_or_else(|| anyhow!("Paid status missing date"))?,
@@ -194,7 +194,7 @@ impl InvoiceRepo for SqliteStorage {
             let status_date: Option<String> = r.get("status_date");
             let status = match status_str.as_str() {
                 "Waiting" => PaidStatus::Waiting,
-                "PastDue" => PaidStatus::PastDue,
+                "Past Due" => PaidStatus::PastDue,
                 "Paid" => PaidStatus::Paid {
                     date: NaiveDate::parse_from_str(
                               &status_date.ok_or_else(|| anyhow!("Paid missing date"))?,
@@ -322,7 +322,7 @@ impl InvoiceRepo for SqliteStorage {
 fn encode_status(status: &PaidStatus) -> (String, Option<String>, Option<String>) {
     match status {
         PaidStatus::Waiting => ("Waiting".into(), None, None),
-        PaidStatus::PastDue => ("PastDue".into(), None, None),
+        PaidStatus::PastDue => ("Past Due".into(), None, None),
         PaidStatus::Paid { date, check } => (
             "Paid".into(),
             Some(date.format("%Y%m%d").to_string()),

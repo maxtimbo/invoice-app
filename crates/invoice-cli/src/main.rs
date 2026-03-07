@@ -8,10 +8,13 @@ use invoice_app::ports::repos::invoice_repo::InvoiceRepo;
 async fn main() -> Result<()> {
     let paths = Paths::init()?;
     let db = SqliteStorage::connect(paths.db.to_str().unwrap()).await?;
+    db.migrate().await?;
+
     let invoices = db.list_invoice_summary().await?;
     for i in invoices {
-        println!("{}: {}\n{}\n{}", i.id, i.issued, i.client_name, i.total);
+        println!("{}: {}\nissued: {}\ndue date: {}\ntotal: {}\nstatus: {}\n\n", i.id, i.client_name, i.issued, i.due, i.total, i.status);
     }
+
     //let renderer = TemplateEngine::new(&paths.templates)?;
     //Cli::to_cmd(&mut db, &renderer)?;
     Ok(())
