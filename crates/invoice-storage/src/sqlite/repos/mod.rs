@@ -1,4 +1,5 @@
 mod invoice_repo;
+mod config_repo;
 mod item_repo;
 mod terms_repo;
 mod method_repo;

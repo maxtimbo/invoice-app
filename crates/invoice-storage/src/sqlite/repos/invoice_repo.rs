@@ -1,5 +1,5 @@
 use anyhow::{anyhow, Result};
-use std::str::FromStr;
+//use std::str::FromStr;
 use async_trait::async_trait;
 use chrono::NaiveDate;
 use rust_decimal::Decimal;
@@ -27,7 +27,7 @@ use std::collections::HashMap;
 #[derive(Serialize, Deserialize)]
 struct ItemRecord {
     item_id: i64,
-    quantity: String,
+    quantity: i64,
 }
 
 impl SqliteStorage {
@@ -69,44 +69,17 @@ impl SqliteStorage {
         let status_date: Option<String> = r.get("status_date");
         let status_check: Option<String> = r.get("status_check");
 
-        let status = match status_str.as_str() {
-            "Waiting" => PaidStatus::Waiting,
-            "Past Due" => PaidStatus::PastDue,
-            "Paid" => {
-                let date = NaiveDate::parse_from_str(
-                    &status_date.ok_or_else(|| anyhow!("Paid status missing date"))?,
-                    "%Y%m%d"
-                )?;
-                PaidStatus::Paid { date, check: status_check }
-            }
-            "Failed" => {
-                let date = NaiveDate::parse_from_str(
-                    &status_date.ok_or_else(|| anyhow!("Failed status missing date"))?,
-                    "%Y%m%d"
-                )?;
-                PaidStatus::Failed { date }
-            }
-            "Refunded" => {
-                let date = NaiveDate::parse_from_str(
-                    &status_date.ok_or_else(|| anyhow!("Refunded status missing date"))?,
-                    "%Y%m%d"
-                )?;
-                PaidStatus::Refunded { date }
-            }
-            s => return Err(anyhow!("unknown status: {}", s)),
-        };
+        let status = parse_status(&status_str, status_date, status_check)?;
 
         let items_json: String = r.get::<String, _>("items_json");
         let item_records: Vec<ItemRecord> = serde_json::from_str(&items_json)
-            .map_err(|e| anyhow!("invalis items_json: {}", e))?;
+            .map_err(|e| anyhow!("invalid items_json: {}", e))?;
         let items = item_records
             .into_iter()
             .map(|rec| {
-                let qty_dec = Decimal::from_str(&rec.quantity)
-                    .map_err(|e| anyhow!("invalid quantity:{}", e))?;
                 Ok(InvoiceItemSkel {
                     item_id: ItemId(rec.item_id),
-                    quantity: Quantity::new(qty_dec)?,
+                    quantity: Quantity::from_scaled(rec.quantity)?,
                 })
             })
             .collect::<Result<Vec<_>>>()?;
@@ -170,6 +143,7 @@ impl InvoiceRepo for SqliteStorage {
                 i.date,
                 i.status,
                 i.status_date,
+                i.status_check,
                 i.total,
                 c.name as client_name,
                 t.due as terms_due
@@ -192,31 +166,8 @@ impl InvoiceRepo for SqliteStorage {
 
             let status_str: String = r.get("status");
             let status_date: Option<String> = r.get("status_date");
-            let status = match status_str.as_str() {
-                "Waiting" => PaidStatus::Waiting,
-                "Past Due" => PaidStatus::PastDue,
-                "Paid" => PaidStatus::Paid {
-                    date: NaiveDate::parse_from_str(
-                              &status_date.ok_or_else(|| anyhow!("Paid missing date"))?,
-                              "%Y%m%d"
-                          )?,
-                        check: None,
-                },
-                "Failed" => PaidStatus::Failed {
-                    date: NaiveDate::parse_from_str(
-                              &status_date.ok_or_else(|| anyhow!("Failed missing date"))?,
-                              "%Y%m%d"
-                          )?,
-                },
-                "Refunded" => PaidStatus::Refunded {
-                    date: NaiveDate::parse_from_str(
-                              &status_date.ok_or_else(|| anyhow!("Refunded missing date"))?,
-                              "%Y%m%d"
-                          )?,
-                },
-                s => return Err(anyhow!("unknown status: {}", s)),
-            };
-
+            let status_check: Option<String> = r.get("status_check");
+            let status = parse_status(&status_str, status_date, status_check)?;
             let total = Currency::from_cents(r.get::<i64, _>("total"));
             summaries.push(InvoiceSummary {
                 id: InvoiceId(r.get::<i64, _>("id")),
@@ -243,7 +194,7 @@ impl InvoiceRepo for SqliteStorage {
         let items_json = serde_json::to_string(
             &input.items.iter().map(|(id, qty)| ItemRecord {
                 item_id: id.0,
-                quantity: qty.inner().to_string(),
+                quantity: qty.to_scaled()
             }).collect::<Vec<_>>()
         )?;
 
@@ -316,6 +267,39 @@ impl InvoiceRepo for SqliteStorage {
             .execute(&self.pool)
             .await?;
         Ok(res.rows_affected() > 0)
+    }
+}
+
+fn parse_status(
+    status_str: &str,
+    status_date: Option<String>,
+    status_check: Option<String>,
+) -> Result<PaidStatus> {
+    match status_str {
+        "Waiting" => Ok(PaidStatus::Waiting),
+        "Past Due" => Ok(PaidStatus::PastDue),
+        "Paid" => {
+            let date = NaiveDate::parse_from_str(
+                &status_date.ok_or_else(|| anyhow!("Paide status missing date"))?,
+                "%Y%m%d",
+            )?;
+            Ok(PaidStatus::Paid { date, check: status_check })
+        }
+        "Failed" => {
+            let date = NaiveDate::parse_from_str(
+                &status_date.ok_or_else(|| anyhow!("Failed status missing date"))?,
+                "%Y%m%d",
+            )?;
+            Ok(PaidStatus::Failed { date })
+        }
+        "Refunded" => {
+            let date = NaiveDate::parse_from_str(
+                &status_date.ok_or_else(|| anyhow!("Refunded status missing date"))?,
+                "%Y%m%d",
+            )?;
+            Ok(PaidStatus::Refunded { date })
+        }
+        s => Err(anyhow!("unknown status: {}", s)),
     }
 }
 

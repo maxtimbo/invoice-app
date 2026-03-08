@@ -6,6 +6,7 @@ edition = "2021"
 [dependencies]
 anyhow = "1.0.102"
 chrono = "0.4.38"
+lettre = { version = "0.11", features = ["tokio1", "tokio1-native-tls"] }
 headless_chrome = "1.0.21"
 tera = "1.20.1"
 directories = "5.0.1"
