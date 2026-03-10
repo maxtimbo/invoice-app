@@ -4,8 +4,7 @@ use sqlx::Row;
 
 use invoice_app::ports::repos::config_repo::{
     ConfigRepo,
-    CreateConfig,
-    UpdateConfig
+    UpsertConfig
 };
 use invoice_core::models::config::Config;
 
@@ -39,7 +38,7 @@ impl ConfigRepo for SqliteStorage {
         }))
     }
 
-    async fn create_config(&self, input: CreateConfig) -> Result<()> {
+    async fn upsert_config(&self, input: UpsertConfig) -> Result<()> {
         sqlx::query(
             "INSERT INTO email_config (
                 id,
@@ -60,33 +59,6 @@ impl ConfigRepo for SqliteStorage {
         .execute(&self.pool)
         .await?;
 
-        Ok(())
-    }
-
-    async fn update_config(&self, patch: UpdateConfig) -> Result<()> {
-        let mut sets: Vec<&str> = Vec::new();
-        if patch.smtp_server.is_some()      { sets.push("smtp_server = ?"); }
-        if patch.port.is_some()             { sets.push("port = ?"); }
-        if patch.tls.is_some()              { sets.push("tls = ?"); }
-        if patch.username.is_some()         { sets.push("username = ?"); }
-        if patch.password.is_some()         { sets.push("password = ?"); }
-        if patch.fromname.is_some()         { sets.push("fromname = ?"); }
-
-        if sets.is_empty() {
-            return Ok(());
-        }
-
-        let sql = format!("UPDATE email_config SET {} WHERE id = 1", sets.join(", "));
-        let mut q = sqlx::query(&sql);
-
-        if let Some(v) = &patch.smtp_server { q = q.bind(v); }
-        if let Some(v) = patch.port         { q = q.bind(v as i64); }
-        if let Some(v) = patch.tls          { q = q.bind(v as i64); }
-        if let Some(v) = &patch.username    { q = q.bind(v); }
-        if let Some(v) = &patch.password    { q = q.bind(v); }
-        if let Some(v) = &patch.fromname    { q = q.bind(v); }
-
-        q.execute(&self.pool).await?;
         Ok(())
     }
 }

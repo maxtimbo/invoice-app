@@ -1,8 +1,19 @@
 use anyhow::Result;
+use clap::Parser;
+use inquire::InquireError;
 
 use invoice_app::commands::paths::Paths;
 use invoice_storage::sqlite::SqliteStorage;
-use invoice_app::ports::repos::invoice_repo::InvoiceRepo;
+
+mod interactive;
+mod cli;
+
+#[derive(Parser)]
+#[command(name = "invoice", about = "Invoice management CLI", version)]
+struct Cli {
+    #[command(subcommand)]
+    command: Option<cli::Commands>,
+}
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -10,12 +21,21 @@ async fn main() -> Result<()> {
     let db = SqliteStorage::connect(paths.db.to_str().unwrap()).await?;
     db.migrate().await?;
 
-    let invoices = db.list_invoice_summary().await?;
-    for i in invoices {
-        println!("{}: {}\nissued: {}\ndue date: {}\ntotal: {}\nstatus: {}\n\n", i.id, i.client_name, i.issued, i.due, i.total, i.status);
-    }
+    let cli = Cli::parse();
 
-    //let renderer = TemplateEngine::new(&paths.templates)?;
-    //Cli::to_cmd(&mut db, &renderer)?;
-    Ok(())
+    let result = match cli.command {
+        Some(cmd) => cli::dispatch(cmd, &db).await,
+        None => interactive::run(&db).await,
+    };
+
+    match result {
+        Err(e) if is_cancelled(&e) => Ok(()),
+        other => other,
+    }
+}
+
+fn is_cancelled(e: &anyhow::Error) -> bool {
+    e.downcast_ref::<InquireError>()
+        .map(|ie| matches!(ie, InquireError::OperationCanceled | InquireError::OperationInterrupted))
+        .unwrap_or(false)
 }

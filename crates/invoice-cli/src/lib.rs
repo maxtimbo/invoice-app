@@ -1,5 +1,7 @@
-
 use inquire::{Text, InquireError, Editor};
+use anyhow::Result;
+
+use invoice_core::models::contact::Contact;
 
 pub trait EntityUpdater<T> {
     type Output;
@@ -9,6 +11,49 @@ pub trait EntityUpdater<T> {
 pub trait EntityDeleter<T> {
     type Output;
     fn delete(&self) -> Result<Self::Output, anyhow::Error>;
+}
+
+pub fn is_cancelled(e: &anyhow::Error) -> bool {
+    e.downcast_ref::<InquireError>()
+        .map(|ie| matches!(ie, InquireError::OperationCanceled | InquireError::OperationInterrupted))
+        .unwrap_or(false)
+}
+
+pub fn prompt_contact(existing: Option<&Contact>) -> Result<Contact> {
+    let def = |opt: &Option<String>| -> &str { opt.as_deref().unwrap_or("") };
+
+    let (ep, ee, ea1, ea2, ec, es, ez) = match existing {
+        Some(c) => (
+            &c.phone, &c.email, &c.addr1, &c.addr2,
+            &c.city, &c.state, &c.zip,
+        ),
+        None => {
+            let _ : Option<String> = None;
+            return prompt_contact_blank();
+        }
+    };
+
+    Ok(Contact {
+        phone:  prompt_optional("Phone:",        def(ep))?,
+        email:  prompt_optional("Email:",        def(ee))?,
+        addr1:  prompt_optional("Address 1:",    def(ea1))?,
+        addr2:  prompt_optional("Address 2:",    def(ea2))?,
+        city:   prompt_optional("City:",         def(ec))?,
+        state:  prompt_optional("State:",        def(es))?,
+        zip:    prompt_optional("Zip:",          def(ez))?,
+    })
+}
+
+fn prompt_contact_blank() -> Result<Contact> {
+    Ok(Contact {
+        phone: prompt_optional("Phone:",     "")?,
+        email: prompt_optional("Email:",     "")?,
+        addr1: prompt_optional("Address 1:", "")?,
+        addr2: prompt_optional("Address 2:", "")?,
+        city:  prompt_optional("City:",      "")?,
+        state: prompt_optional("State:",     "")?,
+        zip:   prompt_optional("Zip:",       "")?,
+    })
 }
 
 pub fn prompt_optional(prompt: &str, default: &str) -> Result<Option<String>, InquireError> {

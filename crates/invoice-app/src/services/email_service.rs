@@ -2,7 +2,7 @@ use anyhow::{anyhow, Context, Result};
 use lettre::{
     message::{header::ContentType, Attachment, MultiPart, SinglePart},
     transport::smtp::authentication::Credentials,
-    AsyncSmtpTransport, Message, Tokio1Executor,
+    AsyncSmtpTransport, AsyncTransport, Message, Tokio1Executor,
 };
 
 use invoice_core::models::{config::Config, invoice::Invoice};
@@ -12,17 +12,13 @@ pub struct EmailService;
 impl EmailService {
     pub async fn send(
         config: &Config,
-        Invoice: &Invoice,
+        invoice: &Invoice,
         html: String,
-        pdf: Vec<u8>
+        pdf: Vec<u8>,
         pdf_filename: String,
     ) -> Result<()> {
-        let to_email = invoice
-            .template
-            .client
-            .contact
-            .as_ref()
-            .and_then(|c| c.email.as_deref())
+        let to_email = invoice.template.client.contact.email
+            .as_deref()
             .ok_or_else(|| anyhow!("Client has no email address - cannot send invoice"))?;
 
         let from = format!("{} <{}>", config.fromname, config.username)
@@ -30,7 +26,7 @@ impl EmailService {
             .context("Invalid from address in email config")?;
 
         let to = to_email
-            .parse
+            .parse()
             .with_context(|| format!("Invalid client email address: {to_email}"))?;
 
         // tweak this
@@ -39,7 +35,7 @@ impl EmailService {
             invoice.id, config.fromname
         );
 
-        let attachment = Attachment::new(pdf_filename).body)
+        let attachment = Attachment::new(pdf_filename).body(
             pdf,
             ContentType::parse("application/pdf").unwrap(),
         );
@@ -68,7 +64,7 @@ impl EmailService {
                 .credentials(creds)
                 .build()
         } else {
-            AyncSmtpTransport::<Tokio1Executor>::builder_dangerous(&config.smtp_server)
+            AsyncSmtpTransport::<Tokio1Executor>::builder_dangerous(&config.smtp_server)
                 .port(config.port)
                 .credentials(creds)
                 .build()
