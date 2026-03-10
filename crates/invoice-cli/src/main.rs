@@ -5,9 +5,6 @@ use inquire::InquireError;
 use invoice_app::commands::paths::Paths;
 use invoice_storage::sqlite::SqliteStorage;
 
-mod interactive;
-mod cli;
-
 #[derive(Parser)]
 #[command(name = "invoice", about = "Invoice management CLI", version)]
 struct Cli {
@@ -34,8 +31,3 @@ async fn main() -> Result<()> {
     }
 }
 
-fn is_cancelled(e: &anyhow::Error) -> bool {
-    e.downcast_ref::<InquireError>()
-        .map(|ie| matches!(ie, InquireError::OperationCanceled | InquireError::OperationInterrupted))
-        .unwrap_or(false)
-}

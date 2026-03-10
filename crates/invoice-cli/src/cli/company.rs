@@ -29,7 +29,6 @@ pub enum CompanyCommand {
 pub async fn run(args: CompanyArgs, db: &SqliteStorage) -> Result<()> {
     match args.command {
         Some(CompanyCommand::List)          => list(db).await,
-        Some(CompanyCommand::Get { id })    => get(CompanyId(id), db).await,
         Some(CompanyCommand::Add)           => add(db).await,
         Some(CompanyCommand::Update { id }) => update(CompanyId(id), db).await,
         Some(CompanyCommand::Delete { id }) => delete(CompanyId(id), db).await,
@@ -40,13 +39,12 @@ pub async fn run(args: CompanyArgs, db: &SqliteStorage) -> Result<()> {
 pub async fn interactive(db: &SqliteStorage) -> Result<()> {
     let choice = Select::new(
         "Company ->",
-        vec!["list", "get", "add", "update", "delete", "back"],
+        vec!["list", "add", "update", "delete", "back"],
     )
     .prompt()?;
 
     match choice {
         "list"      => list(db).await,
-        "get"       => get(CompanyId(prompt_id("company id:")?), db).await,
         "add"       => add(db).await,
         "update"    => update(CompanyId(prompt_id("company id:")?), db).await,
         "delete"    => delete(CompanyId(prompt_id("company id:")?), db).await,
@@ -159,42 +157,6 @@ async fn delete(id: CompanyId, db: &SqliteStorage) -> Result<()> {
 }
 
 /// Reads and validates a logo image. Returns None if the user skips.
-fn prompt_logo(prompt: &str) -> Result<Option<Vec<u8>>> {
-    let input = prompt_optional(prompt, "")?;
-    let path = match input {
-        None => return Ok(None),
-        Some(s) => PathBuf::from(s),
-    };
-
-    // Validate MIME type
-    // This should be in app?
-    let mime = mime_guess::from_path(&path)
-        .first()
-        .ok_or_else(|| anyhow!("Could not determine file type for {:?}", path))?;
-    if mime.type_() != "image" {
-        return Err(anyhow!("File must be an image (got {})", mime));
-    }
-    let accepted = ["jpeg", "jpg", "png", "webp"];
-    if !accepted.contains(&mime.subtype().as_str()) {
-        return Err(anyhow!(
-            "Unsupported image format '{}'. Use jpeg, png, or webp.",
-            mime.subtype()
-        ));
-    }
-
-    // Validate size (1 MB limit)
-    // This should be in app?
-    const MAX_BYTES: u64 = 1_000_000;
-    let size = std::fs::metadata(&path)?.len();
-    if size > MAX_BYTES {
-        return Err(anyhow!(
-            "Image is {:.1} KB, maximum is 1000 KB.",
-            size as f64 / 1024.0
-        ));
-    }
-
-    Ok(Some(std::fs::read(&path)?))
-}
 
 /// Parse an i64 ID from an interactive prompt.
 fn prompt_id(label: &str) -> Result<i64> {

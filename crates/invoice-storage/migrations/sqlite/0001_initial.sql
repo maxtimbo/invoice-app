@@ -66,13 +66,3 @@ CREATE TABLE IF NOT EXISTS invoices (
     notes           TEXT,
     items_json      TEXT    NOT NULL DEFAULT '[]'
 );
-
-CREATE TABLE IF NOT EXISTS email_config (
-    id              INTEGER PRIMARY KEY AUTOINCREMENT,
-    smtp_server     TEXT    NOT NULL,
-    port            INTEGER NOT NULL,
-    tls             INTEGER NOT NULL DEFAULT 1,
-    username        TEXT    NOT NULL,
-    password        TEXT    NOT NULL,
-    fromname        TEXT    NOT NULL
-);

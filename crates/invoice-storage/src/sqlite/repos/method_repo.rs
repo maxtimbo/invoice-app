@@ -23,8 +23,8 @@ impl MethodRepo for SqliteStorage {
         Ok(row.map(|r| Method {
             id: MethodId(r.get::<i64, _>("id")),
             name: r.get::<String, _>("name"),
-            link: Some(r.get::<String, _>("link")),
-            qr: Some(r.get::<Vec<u8>, _>("qr")),
+            link: r.get::<Option<String>, _>("link"),
+            qr: r.get::<Option<Vec<u8>>, _>("qr"),
         }))
     }
 
@@ -36,8 +36,8 @@ impl MethodRepo for SqliteStorage {
             .map(|r| Method {
                 id: MethodId(r.get::<i64, _>("id")),
                 name: r.get::<String, _>("name"),
-                link: Some(r.get::<String, _>("link")),
-                qr: Some(r.get::<Vec<u8>, _>("qr")),
+                link: r.get::<Option<String>, _>("link"),
+                qr: r.get::<Option<Vec<u8>>, _>("qr"),
             })
             .collect())
     }

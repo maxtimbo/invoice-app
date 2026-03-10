@@ -12,8 +12,6 @@ pub struct TemplateArgs {
 pub enum TemplateCommand {
     /// List all templates
     List,
-    /// Show a template by ID
-    Get { id: i64 },
     /// Add a new template
     Add,
     /// Update an existing template

@@ -40,7 +40,7 @@ impl ConfigRepo for SqliteStorage {
 
     async fn upsert_config(&self, input: UpsertConfig) -> Result<()> {
         sqlx::query(
-            "INSERT INTO email_config (
+            "INSERT OR REPLACE INTO email_config (
                 id,
                 smtp_server,
                 port,

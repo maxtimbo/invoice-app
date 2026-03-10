@@ -1,6 +1,6 @@
 use anyhow::Result;
 use clap::{Args, Subcommand};
-use invoice_storage::sqlite::SqliteStprage;
+use invoice_storage::sqlite::SqliteStorage;
 
 #[derive(Args)]
 pub struct ClientArgs {
