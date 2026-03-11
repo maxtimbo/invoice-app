@@ -5,9 +5,9 @@ use rust_decimal::Decimal;
 use std::str::FromStr;
 
 use invoice_app::ports::repos::item_repo::{CreateItem, ItemRepo, UpdateItem};
-use invoice_core::models::{currency::Currency, ids::ItemId};
+use invoice_core::models::{item::Item, currency::Currency, ids::ItemId};
 use invoice_storage::sqlite::SqliteStorage;
-use invoice_cli::prompt_id;
+use invoice_cli::{resolve_id, prompt_id};
 
 #[derive(Args)]
 pub struct ItemsArgs {
@@ -22,17 +22,25 @@ pub enum ItemsCommand {
     /// Add a new item
     Add,
     /// Update an existing item
-    Update { id: i64 },
+    Update { id: Option<i64> },
     /// Delete an item
-    Delete { id: i64 },
+    Delete { id: Option<i64> },
 }
 
 pub async fn run(args: ItemsArgs, db: &SqliteStorage) -> Result<()> {
     match args.command {
         Some(ItemsCommand::List)            => list(db).await,
         Some(ItemsCommand::Add)             => add(db).await,
-        Some(ItemsCommand::Update { id })   => update(ItemId(id), db).await,
-        Some(ItemsCommand::Delete { id })   => delete(ItemId(id), db).await,
+        Some(ItemsCommand::Update { id })   => {
+            let id = resolve_id!(id, db, list_item, Item, ItemId,
+                "No items found", "Select item:");
+            update(id, db).await
+        }
+        Some(ItemsCommand::Delete { id })   => {
+            let id = resolve_id!(id, db, list_item, Item, ItemId,
+                "No items found", "Select item:");
+            delete(id, db).await
+        }
         None => interactive(db).await,
     }
 }

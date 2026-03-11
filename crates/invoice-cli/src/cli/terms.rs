@@ -3,9 +3,9 @@ use clap::{Args, Subcommand};
 use inquire::{Confirm, Select, Text};
 
 use invoice_app::ports::repos::terms_repo::{CreateTerms, TermsRepo, UpdateTerms};
-use invoice_core::models::ids::TermsId;
+use invoice_core::models::{terms::Terms, ids::TermsId};
 use invoice_storage::sqlite::SqliteStorage;
-use invoice_cli::prompt_id;
+use invoice_cli::{resolve_id, prompt_id};
 
 #[derive(Args)]
 pub struct TermsArgs {
@@ -20,17 +20,25 @@ pub enum TermsCommand {
     /// Add new payment terms
     Add,
     /// Update existing payment terms
-    Update { id: i64 },
+    Update { id: Option<i64> },
     /// Delete payment terms
-    Delete { id: i64 },
+    Delete { id: Option<i64> },
 }
 
 pub async fn run(args: TermsArgs, db: &SqliteStorage) -> Result<()> {
     match args.command {
         Some(TermsCommand::List)            => list(db).await,
         Some(TermsCommand::Add)             => add(db).await,
-        Some(TermsCommand::Update { id })   => update(TermsId(id), db).await,
-        Some(TermsCommand::Delete { id })   => delete(TermsId(id), db).await,
+        Some(TermsCommand::Update { id })   => {
+            let id = resolve_id!(id, db, list_terms, Terms, TermsId, 
+                "No terms found", "Select terms");
+            update(id, db).await
+        }
+        Some(TermsCommand::Delete { id })   => {
+            let id = resolve_id!(id, db, list_terms, Terms, TermsId, 
+                "No terms found", "Select terms");
+            delete(id, db).await
+        }
         None => interactive(db).await,
     }
 }

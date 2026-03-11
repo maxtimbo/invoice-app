@@ -7,14 +7,30 @@ use invoice_app::services::image::validate_image;
 
 pub mod render;
 
-pub trait EntityUpdater<T> {
-    type Output;
-    fn update(&self) -> Result<Self::Output, InquireError>;
-}
-
-pub trait EntityDeleter<T> {
-    type Output;
-    fn delete(&self) -> Result<Self::Output, anyhow::Error>;
+#[macro_export]
+macro_rules! resolve_id {
+    (
+        $id:expr,
+        $db:expr,
+        $list_method:ident,
+        $model_type:ty,
+        $id_type:ident,
+        $empty_msg:expr,
+        $prompt:expr
+    ) => {{
+        match $id {
+            Some(id) => $id_type(id),
+            None => {
+                let all = $db.$list_method().await?;
+                if all.is_empty() {
+                    return Err(::anyhow::anyhow!($empty_msg));
+                }
+                let choice: $model_type =
+                    ::inquire::Select::new($prompt, all).prompt()?;
+                choice.id
+            }
+        }
+    }};
 }
 
 pub fn is_cancelled(e: &anyhow::Error) -> bool {

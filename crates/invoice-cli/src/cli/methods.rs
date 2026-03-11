@@ -3,9 +3,9 @@ use clap::{Args, Subcommand};
 use inquire::{Confirm, Select, Text};
 
 use invoice_app::ports::repos::method_repo::{CreateMethod, MethodRepo, UpdateMethod};
-use invoice_core::models::ids::MethodId;
+use invoice_core::models::{method::Method, ids::MethodId};
 use invoice_storage::sqlite::SqliteStorage;
-use invoice_cli::{prompt_id, prompt_image, prompt_optional};
+use invoice_cli::{prompt_id, prompt_image, prompt_optional, resolve_id};
 
 #[derive(Args)]
 pub struct MethodsArgs {
@@ -20,17 +20,25 @@ pub enum MethodsCommand {
     /// Add a new payment method
     Add,
     /// Update an existing payment method
-    Update { id: i64 },
+    Update { id: Option<i64> },
     /// Delete a payment method
-    Delete { id: i64 },
+    Delete { id: Option<i64> },
 }
 
 pub async fn run(args: MethodsArgs, db: &SqliteStorage) -> Result<()> {
     match args.command {
         Some(MethodsCommand::List)            => list(db).await,
         Some(MethodsCommand::Add)             => add(db).await,
-        Some(MethodsCommand::Update { id })   => update(MethodId(id), db).await,
-        Some(MethodsCommand::Delete { id })   => delete(MethodId(id), db).await,
+        Some(MethodsCommand::Update { id })   => {
+            let id = resolve_id!(id, db, list_method, Method, MethodId,
+                "No methods found", "Select method:");
+            update(id, db).await
+        }
+        Some(MethodsCommand::Delete { id })   => {
+            let id = resolve_id!(id, db, list_method, Method, MethodId,
+                "No methods found", "Select method:");
+            delete(id, db).await
+        }
         None => interactive(db).await,
     }
 }

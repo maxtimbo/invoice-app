@@ -9,9 +9,9 @@ use invoice_app::ports::repos::{
     template_repo::{CreateTemplate, TemplateRepo, UpdateTemplate},
     terms_repo::TermsRepo,
 };
-use invoice_core::models::ids::TemplateId;
+use invoice_core::models::{template::Template, ids::TemplateId};
 use invoice_storage::sqlite::SqliteStorage;
-use invoice_cli::prompt_id;
+use invoice_cli::{prompt_id, resolve_id};
 
 #[derive(Args)]
 pub struct TemplateArgs {
@@ -26,17 +26,25 @@ pub enum TemplateCommand {
     /// Add a new template
     Add,
     /// Update an existing template
-    Update { id: i64 },
+    Update { id: Option<i64> },
     /// Delete a template
-    Delete { id: i64 },
+    Delete { id: Option<i64> },
 }
 
 pub async fn run(args: TemplateArgs, db: &SqliteStorage) -> Result<()> {
     match args.command {
         Some(TemplateCommand::List)            => list(db).await,
         Some(TemplateCommand::Add)             => add(db).await,
-        Some(TemplateCommand::Update { id })   => update(TemplateId(id), db).await,
-        Some(TemplateCommand::Delete { id })   => delete(TemplateId(id), db).await,
+        Some(TemplateCommand::Update { id })   => {
+            let id = resolve_id!(id, db, list_template, Template, TemplateId,
+                "No templates found", "Select template:");
+            update(id, db).await
+        }
+        Some(TemplateCommand::Delete { id })   => {
+            let id = resolve_id!(id, db, list_template, Template, TemplateId,
+                "No templates found", "Select template:");
+            delete(id, db).await
+        }
         None => interactive(db).await,
     }
 }

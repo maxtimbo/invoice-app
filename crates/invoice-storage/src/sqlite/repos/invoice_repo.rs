@@ -26,7 +26,7 @@ use std::collections::HashMap;
 
 #[derive(Serialize, Deserialize)]
 struct ItemRecord {
-    item_id: i64,
+    item: i64,
     quantity: i64,
 }
 
@@ -78,7 +78,7 @@ impl SqliteStorage {
             .into_iter()
             .map(|rec| {
                 Ok(InvoiceItemSkel {
-                    item_id: ItemId(rec.item_id),
+                    item: ItemId(rec.item),
                     quantity: Quantity::from_scaled(rec.quantity)?,
                 })
             })
@@ -104,8 +104,8 @@ impl SqliteStorage {
         let mut items: HashMap<Item, Quantity> = HashMap::new();
 
         for item_skel in skel.items {
-            let item = self.get_item(item_skel.item_id).await?
-                .ok_or_else(|| anyhow!("item {} not found", item_skel.item_id.0))?;
+            let item = self.get_item(item_skel.item).await?
+                .ok_or_else(|| anyhow!("item {} not found", item_skel.item.0))?;
             items.insert(item, item_skel.quantity);
         }
 
@@ -183,9 +183,9 @@ impl InvoiceRepo for SqliteStorage {
 
     async fn create_invoice(&self, input: CreateInvoice) -> Result<InvoiceId> {
         let mut hydrated_items = Vec::new();
-        for (item_id, quantity) in &input.items {
-            let item = self.get_item(*item_id).await?
-                .ok_or_else(|| anyhow!("item {} not found", item_id.0))?;
+        for (item, quantity) in &input.items {
+            let item = self.get_item(*item).await?
+                .ok_or_else(|| anyhow!("item {} not found", item.0))?;
             hydrated_items.push((item, quantity.clone()));
         }
 
@@ -193,7 +193,7 @@ impl InvoiceRepo for SqliteStorage {
 
         let items_json = serde_json::to_string(
             &input.items.iter().map(|(id, qty)| ItemRecord {
-                item_id: id.0,
+                item: id.0,
                 quantity: qty.to_scaled()
             }).collect::<Vec<_>>()
         )?;

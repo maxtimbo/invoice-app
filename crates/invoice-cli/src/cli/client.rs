@@ -3,9 +3,9 @@ use clap::{Args, Subcommand};
 use inquire::{Confirm, Select, Text};
 
 use invoice_app::ports::repos::client_repo::{ClientRepo, CreateClient, UpdateClient};
-use invoice_core::models::ids::ClientId;
+use invoice_core::models::{client::ClientList, ids::ClientId};
 use invoice_storage::sqlite::SqliteStorage;
-use invoice_cli::{prompt_contact, prompt_id};
+use invoice_cli::{prompt_contact, prompt_id, resolve_id};
 
 #[derive(Args)]
 pub struct ClientArgs {
@@ -20,17 +20,25 @@ pub enum ClientCommand {
     /// Add a new client
     Add,
     /// Update an existing client
-    Update { id: i64 },
+    Update { id: Option<i64> },
     /// Delete a client
-    Delete { id: i64 },
+    Delete { id: Option<i64> },
 }
 
 pub async fn run(args: ClientArgs, db: &SqliteStorage) -> Result<()> {
     match args.command {
         Some(ClientCommand::List)            => list(db).await,
         Some(ClientCommand::Add)             => add(db).await,
-        Some(ClientCommand::Update { id })   => update(ClientId(id), db).await,
-        Some(ClientCommand::Delete { id })   => delete(ClientId(id), db).await,
+        Some(ClientCommand::Update { id })   => {
+            let id = resolve_id!(id, db, list_client, ClientList, ClientId,
+                "No clients found", "Select client:");
+            update(id, db).await
+        }
+        Some(ClientCommand::Delete { id })   => {
+            let id = resolve_id!(id, db, list_client, ClientList, ClientId,
+                "No clients found", "Select client:");
+            delete(id, db).await
+        }
         None => interactive(db).await,
     }
 }

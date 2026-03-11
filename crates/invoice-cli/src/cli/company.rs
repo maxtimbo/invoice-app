@@ -3,9 +3,9 @@ use clap::{Args, Subcommand};
 use inquire::{Confirm, Select, Text};
 
 use invoice_app::ports::repos::company_repo::{CompanyRepo, CreateCompany, UpdateCompany};
-use invoice_core::models::ids::CompanyId;
+use invoice_core::models::{company::CompanyList, ids::CompanyId};
 use invoice_storage::sqlite::SqliteStorage;
-use invoice_cli::{prompt_image, prompt_id, prompt_contact};
+use invoice_cli::{prompt_image, prompt_id, prompt_contact, resolve_id};
 
 #[derive(Args)]
 pub struct CompanyArgs {
@@ -20,17 +20,25 @@ pub enum CompanyCommand {
     /// add a new company
     Add,
     /// update an existing company
-    Update { id: i64 },
+    Update { id: Option<i64> },
     /// delete a company
-    Delete { id: i64 },
+    Delete { id: Option<i64> },
 }
 
 pub async fn run(args: CompanyArgs, db: &SqliteStorage) -> Result<()> {
     match args.command {
         Some(CompanyCommand::List)          => list(db).await,
         Some(CompanyCommand::Add)           => add(db).await,
-        Some(CompanyCommand::Update { id }) => update(CompanyId(id), db).await,
-        Some(CompanyCommand::Delete { id }) => delete(CompanyId(id), db).await,
+        Some(CompanyCommand::Update { id }) => {
+            let id = resolve_id!(id, db, list_company, CompanyList, CompanyId,
+                "No companies found", "Select company:");
+            update(id, db).await
+        }
+        Some(CompanyCommand::Delete { id }) => {
+            let id = resolve_id!(id, db, list_company, CompanyList, CompanyId,
+                "No companies found", "Select company:");
+            delete(id, db).await
+        }
         None => interactive(db).await,
     }
 }

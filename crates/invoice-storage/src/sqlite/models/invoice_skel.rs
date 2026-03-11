@@ -7,7 +7,7 @@ use invoice_core::models::{
 };
 
 pub(crate) struct InvoiceItemSkel {
-    pub item_id: ItemId,
+    pub item: ItemId,
     pub quantity: Quantity,
 }
 
