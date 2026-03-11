@@ -8,3 +8,10 @@ pub struct Company {
     pub logo: Option<Vec<u8>>,
     pub contact: Contact,
 }
+
+#[derive(Debug, Clone)]
+pub struct CompanyList {
+    pub id: CompanyId,
+    pub name: String,
+}
+

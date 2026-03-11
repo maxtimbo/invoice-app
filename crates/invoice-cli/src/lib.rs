@@ -3,11 +3,9 @@ use inquire::{Text, InquireError, Editor};
 use anyhow::{anyhow, Result};
 
 use invoice_core::models::contact::Contact;
+use invoice_app::services::image::validate_image;
 
 pub mod render;
-mod interactive;
-mod cli;
-mod validators;
 
 pub trait EntityUpdater<T> {
     type Output;
@@ -26,68 +24,30 @@ pub fn is_cancelled(e: &anyhow::Error) -> bool {
 }
 
 pub fn prompt_contact(existing: Option<&Contact>) -> Result<Contact> {
-    let def = |opt: &Option<String>| -> &str { opt.as_deref().unwrap_or("") };
-
-    let (ep, ee, ea1, ea2, ec, es, ez) = match existing {
-        Some(c) => (
-            &c.phone, &c.email, &c.addr1, &c.addr2,
-            &c.city, &c.state, &c.zip,
-        ),
-        None => {
-            let _ : Option<String> = None;
-            return prompt_contact_blank();
-        }
-    };
-
-    Ok(Contact {
-        phone:  prompt_optional("Phone:",        def(ep))?,
-        email:  prompt_optional("Email:",        def(ee))?,
-        addr1:  prompt_optional("Address 1:",    def(ea1))?,
-        addr2:  prompt_optional("Address 2:",    def(ea2))?,
-        city:   prompt_optional("City:",         def(ec))?,
-        state:  prompt_optional("State:",        def(es))?,
-        zip:    prompt_optional("Zip:",          def(ez))?,
-    })
+    match existing {
+        None => prompt_contact_blank(),
+        Some(c) => Ok(Contact {
+            phone:  prompt_optional("Phone:",        c.phone.as_deref().unwrap_or(""))?,
+            email:  prompt_optional("Email:",        c.email.as_deref().unwrap_or(""))?,
+            addr1:  prompt_optional("Address 1:",    c.addr1.as_deref().unwrap_or(""))?,
+            addr2:  prompt_optional("Address 2:",    c.addr2.as_deref().unwrap_or(""))?,
+            city:   prompt_optional("City:",         c.city.as_deref().unwrap_or(""))?,
+            state:  prompt_optional("State:",        c.state.as_deref().unwrap_or(""))?,
+            zip:    prompt_optional("Zip:",          c.zip.as_deref().unwrap_or(""))?,
+        }),
+    }
 }
 
-fn prompt_image(prompt: &str) -> Result<Option<Vec<u8>>> {
+pub fn prompt_image(prompt: &str) -> Result<Option<Vec<u8>>> {
     let input = prompt_optional(prompt, "")?;
-    let path = match input {
-        None => return Ok(None),
-        Some(s) => PathBuf::from(s),
-    };
-
-    // Validate MIME type
-    // This should be in app?
-    let mime = mime_guess::from_path(&path)
-        .first()
-        .ok_or_else(|| anyhow!("Could not determine file type for {:?}", path))?;
-    if mime.type_() != "image" {
-        return Err(anyhow!("File must be an image (got {})", mime));
+    match input {
+        None => Ok(None),
+        Some(s) if s.trim().is_empty() => Ok(None),
+        Some(s) => validate_image(&PathBuf::from(s)).map(Some),
     }
-    let accepted = ["jpeg", "jpg", "png", "webp"];
-    if !accepted.contains(&mime.subtype().as_str()) {
-        return Err(anyhow!(
-            "Unsupported image format '{}'. Use jpeg, png, or webp.",
-            mime.subtype()
-        ));
-    }
-
-    // Validate size (1 MB limit)
-    // This should be in app?
-    const MAX_BYTES: u64 = 1_000_000;
-    let size = std::fs::metadata(&path)?.len();
-    if size > MAX_BYTES {
-        return Err(anyhow!(
-            "Image is {:.1} KB, maximum is 1000 KB.",
-            size as f64 / 1024.0
-        ));
-    }
-
-    Ok(Some(std::fs::read(&path)?))
 }
 
-fn prompt_contact_blank() -> Result<Contact> {
+pub fn prompt_contact_blank() -> Result<Contact> {
     Ok(Contact {
         phone: prompt_optional("Phone:",     "")?,
         email: prompt_optional("Email:",     "")?,
@@ -123,4 +83,11 @@ pub fn editor_optional(prompt: &str, default: &str) -> Result<Option<String>, In
     } else {
         Ok(Some(input))
     }
+}
+
+pub fn prompt_id(label: &str) -> Result<i64> {
+    let s = Text::new(label).prompt()?;
+    s.trim()
+        .parse::<i64>()
+        .map_err(|_| anyhow!("'{}' is not a valid ID.", s))
 }

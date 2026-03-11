@@ -2,7 +2,7 @@ use async_trait::async_trait;
 use anyhow::Result;
 
 use invoice_core::models::{
-    company::Company,
+    company::{Company, CompanyList},
     contact::Contact,
     ids::CompanyId,
 };
@@ -24,7 +24,7 @@ pub struct UpdateCompany {
 #[async_trait]
 pub trait CompanyRepo: Send + Sync {
     async fn get_company(&self, id: CompanyId) -> Result<Option<Company>>;
-    async fn list_company(&self) -> Result<Vec<Company>>;
+    async fn list_company(&self) -> Result<Vec<CompanyList>>;
 
     async fn create_company(&self, input: CreateCompany) -> Result<CompanyId>;
     async fn update_company(&self, id: CompanyId, patch: UpdateCompany) -> Result<()>;

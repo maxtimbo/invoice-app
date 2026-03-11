@@ -1,12 +1,11 @@
 use anyhow::{anyhow, Result};
 use clap::{Args, Subcommand};
 use inquire::{Confirm, Select, Text};
-use std::path::PathBuf;
 
 use invoice_app::ports::repos::company_repo::{CompanyRepo, CreateCompany, UpdateCompany};
-use invoice_core::models::{contact::Contact, ids::CompanyId};
+use invoice_core::models::ids::CompanyId;
 use invoice_storage::sqlite::SqliteStorage;
-use invoice_cli::prompt_optional;
+use invoice_cli::{prompt_image, prompt_id, prompt_contact};
 
 #[derive(Args)]
 pub struct CompanyArgs {
@@ -76,7 +75,7 @@ async fn get(id: CompanyId, db: &SqliteStorage) -> Result<()> {
 
 async fn add(db: &SqliteStorage) -> Result<()> {
     let name    = Text::new("Name:").prompt()?;
-    let logo    = prompt_logo("Logo path (leave blank to skip):")?;
+    let logo    = prompt_image("Logo path (leave blank to skip):")?;
     let contact = prompt_contact(None)?;
 
     let id = db.create_company(CreateCompany { name, logo, contact }).await?;
@@ -100,7 +99,7 @@ async fn update(id: CompanyId, db: &SqliteStorage) -> Result<()> {
     };
 
     let new_logo = if Confirm::new("Update logo?").with_default(false).prompt()? {
-        prompt_logo("New logo path (leave blank to clear):")?
+        prompt_image("New logo path (leave blank to clear):")?
     } else {
         existing.logo
     };
@@ -156,12 +155,3 @@ async fn delete(id: CompanyId, db: &SqliteStorage) -> Result<()> {
     Ok(())
 }
 
-/// Reads and validates a logo image. Returns None if the user skips.
-
-/// Parse an i64 ID from an interactive prompt.
-fn prompt_id(label: &str) -> Result<i64> {
-    let s = Text::new(label).prompt()?;
-    s.trim()
-        .parse::<i64>()
-        .map_err(|_| anyhow!("'{}' is not a valid ID.", s))
-}

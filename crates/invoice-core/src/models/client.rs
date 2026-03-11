@@ -7,3 +7,9 @@ pub struct Client {
     pub name: String,
     pub contact: Contact,
 }
+
+#[derive(Debug, Clone)]
+pub struct ClientList {
+    pub id: ClientId,
+    pub name: String,
+}

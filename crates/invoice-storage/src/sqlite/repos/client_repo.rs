@@ -10,7 +10,7 @@ use invoice_app::ports::repos::client_repo::{
     UpdateClient
 };
 use invoice_core::models::{
-    client::Client,
+    client::{Client, ClientList},
     contact::Contact,
     ids::ClientId,
 };
@@ -41,25 +41,16 @@ impl ClientRepo for SqliteStorage {
             },
         }))
     }
-    async fn list_client(&self) -> Result<Vec<Client>> {
+    async fn list_client(&self) -> Result<Vec<ClientList>> {
         let rows = sqlx::query(
-            "SELECT id, name, phone, email, addr1, addr2, city, state, zip
+            "SELECT id, name
             FROM client ORDER BY id")
             .fetch_all(&self.pool)
             .await?;
         Ok(rows.into_iter()
-            .map(|r| Client {
+            .map(|r| ClientList {
                 id: ClientId(r.get::<i64, _>("id")),
                 name: r.get::<String, _>("name"),
-                contact: Contact {
-                    phone: r.get::<Option<String>, _>("phone"),
-                    email: r.get::<Option<String>, _>("email"),
-                    addr1: r.get::<Option<String>, _>("addr1"),
-                    addr2: r.get::<Option<String>, _>("addr2"),
-                    city:  r.get::<Option<String>, _>("city"),
-                    state: r.get::<Option<String>, _>("state"),
-                    zip:   r.get::<Option<String>, _>("zip"),
-                },
             })
             .collect())
     }

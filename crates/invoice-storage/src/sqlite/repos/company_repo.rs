@@ -10,7 +10,7 @@ use invoice_app::ports::repos::company_repo::{
     UpdateCompany
 };
 use invoice_core::models::{
-    company::Company,
+    company::{Company, CompanyList},
     contact::Contact,
     ids::CompanyId,
 };
@@ -41,26 +41,16 @@ impl CompanyRepo for SqliteStorage {
             },
         }))
     }
-    async fn list_company(&self) -> Result<Vec<Company>> {
+    async fn list_company(&self) -> Result<Vec<CompanyList>> {
         let rows = sqlx::query(
-            "SELECT id, name, logo, phone, email, addr1, addr2, city, state, zip
+            "SELECT id, name
             FROM company ORDER BY id")
             .fetch_all(&self.pool)
             .await?;
         Ok(rows.into_iter()
-            .map(|r| Company {
+            .map(|r| CompanyList {
                 id: CompanyId(r.get::<i64, _>("id")),
                 name: r.get::<String, _>("name"),
-                logo: r.get::<Option<Vec<u8>>, _>("logo"),
-                contact: Contact {
-                    phone: r.get::<Option<String>, _>("phone"),
-                    email: r.get::<Option<String>, _>("email"),
-                    addr1: r.get::<Option<String>, _>("addr1"),
-                    addr2: r.get::<Option<String>, _>("addr2"),
-                    city:  r.get::<Option<String>, _>("city"),
-                    state: r.get::<Option<String>, _>("state"),
-                    zip:   r.get::<Option<String>, _>("zip"),
-                },
             })
             .collect())
     }

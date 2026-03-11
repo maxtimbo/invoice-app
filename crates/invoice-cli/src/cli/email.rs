@@ -10,8 +10,7 @@ use invoice_app::{
 };
 
 use invoice_core::models::ids::InvoiceId;
-
-//use crate::render::{render_html, render_pdf};
+use invoice_cli::render::{render_pdf, render_html};
 
 #[derive(Debug, Args)]
 pub struct EmailArgs {
@@ -41,7 +40,7 @@ where
     }
 }
 
-async fn send<R: InvoiceRepo + ConfigRepo>(repo: &R, id: i64) -> Result<()> {
+pub async fn send<R: InvoiceRepo + ConfigRepo>(repo: &R, id: i64) -> Result<()> {
     let config = repo
         .get_config()
         .await?
@@ -84,7 +83,7 @@ async fn set_config<R: ConfigRepo>(repo: &R) -> Result<()> {
     let c_port      = current.as_ref().map(|c| c.port.to_string()).unwrap_or_else(|| "587".into());
     let c_tls       = current.as_ref().map(|c| c.tls).unwrap_or(true);
     let c_username  = current.as_ref().map(|c| c.username.as_str()).unwrap_or("");
-    let c_fromname  = current.as_ref().map(|c| c.username.as_str()).unwrap_or("");
+    let c_fromname  = current.as_ref().map(|c| c.fromname.as_str()).unwrap_or("");
 
     let smtp_server = Text::new("SMTP server:").with_default(c_server).prompt()?;
     let port_str    = Text::new("Port:").with_default(&c_port).prompt()?;

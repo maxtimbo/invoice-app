@@ -1359,6 +1359,7 @@ dependencies = [
  "headless_chrome",
  "invoice-core",
  "lettre",
+ "mime_guess",
  "tera",
 ]
 
@@ -1367,12 +1368,13 @@ name = "invoice-cli"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "chrono",
  "clap",
  "inquire",
  "invoice-app",
  "invoice-core",
  "invoice-storage",
- "mime_guess",
+ "rust_decimal",
  "tokio",
 ]
 

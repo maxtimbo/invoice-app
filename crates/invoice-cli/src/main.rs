@@ -1,9 +1,12 @@
 use anyhow::Result;
 use clap::Parser;
-use inquire::InquireError;
 
 use invoice_app::commands::paths::Paths;
 use invoice_storage::sqlite::SqliteStorage;
+use invoice_cli::is_cancelled;
+
+mod interactive;
+mod cli;
 
 #[derive(Parser)]
 #[command(name = "invoice", about = "Invoice management CLI", version)]
