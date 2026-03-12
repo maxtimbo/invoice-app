@@ -3,8 +3,9 @@ use chrono::NaiveDate;
 use crate::models::status::PaidStatus;
 use crate::models::ids::InvoiceId;
 use crate::models::currency::Currency;
+use serde::{Serialize, Deserialize};
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct InvoiceSummary {
     pub id: InvoiceId,
     pub client_name: String,

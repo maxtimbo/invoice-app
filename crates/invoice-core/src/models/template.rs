@@ -3,8 +3,9 @@ use crate::models::client::Client;
 use crate::models::company::Company;
 use crate::models::terms::Terms;
 use crate::models::method::Method;
+use serde::{Serialize, Deserialize};
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Template {
     pub id: TemplateId,
     pub name: String,
@@ -14,7 +15,7 @@ pub struct Template {
     pub method: Vec<Method>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct TemplateSummary {
     pub id: TemplateId,
     pub name: String,

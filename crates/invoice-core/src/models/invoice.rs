@@ -2,6 +2,7 @@ use std::collections::HashMap;
 
 use chrono::{NaiveDate, Duration};
 use rust_decimal::Decimal;
+use serde::{Serialize, Deserialize};
 
 use crate::models::ids::InvoiceId;
 use crate::models::template::Template;
@@ -12,7 +13,7 @@ use crate::models::attributes::InvoiceAttrs;
 use crate::models::status::PaidStatus;
 use crate::models::stage::InvoiceStage;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Invoice {
     pub id: InvoiceId,
     pub template: Template,

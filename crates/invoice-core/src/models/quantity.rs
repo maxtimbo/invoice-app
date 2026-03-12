@@ -1,9 +1,10 @@
 use rust_decimal::Decimal;
 use rust_decimal::prelude::ToPrimitive;
+use serde::{Serialize, Deserialize};
 
 use crate::errors::DomainError;
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Quantity(pub Decimal);
 
 impl Quantity {
