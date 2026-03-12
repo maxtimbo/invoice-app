@@ -69,11 +69,7 @@ impl EmailService {
             .parse()
             .context("Invalid from address in email config")?;
 
-        // tweak this
-        let subject = format!(
-            "Invoice ${:04}",
-            invoice.id
-        );
+        let subject = invoice.email_subject();
 
         let attachment = Attachment::new(pdf_filename).body(
             pdf,
