@@ -8,4 +8,5 @@ pub struct Config {
     pub username: String,
     pub password: String,
     pub fromname: String,
+    pub test_recipient: Option<String>,
 }

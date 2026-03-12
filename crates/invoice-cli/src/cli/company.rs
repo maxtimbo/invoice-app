@@ -73,14 +73,6 @@ async fn list(db: &SqliteStorage) -> Result<()> {
     Ok(())
 }
 
-async fn get(id: CompanyId, db: &SqliteStorage) -> Result<()> {
-    match db.get_company(id).await? {
-        Some(c) => println!("{}", c),
-        None    => println!("Company {} not found", id.0),
-    }
-    Ok(())
-}
-
 async fn add(db: &SqliteStorage) -> Result<()> {
     let name    = Text::new("Name:").prompt()?;
     let logo    = prompt_image("Logo path (leave blank to skip):")?;

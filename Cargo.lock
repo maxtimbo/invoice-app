@@ -1354,12 +1354,14 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "async-trait",
+ "base64",
  "chrono",
  "directories",
  "headless_chrome",
  "invoice-core",
  "lettre",
  "mime_guess",
+ "serde",
  "tera",
 ]
 

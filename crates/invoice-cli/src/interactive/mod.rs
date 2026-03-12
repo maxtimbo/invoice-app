@@ -17,6 +17,7 @@ pub async fn run(db: &SqliteStorage) -> Result<()> {
                 "Methods",
                 "Templates",
                 "Invoices",
+                "Email",
                 "Quit",
             ],
         )
@@ -30,6 +31,7 @@ pub async fn run(db: &SqliteStorage) -> Result<()> {
             "Methods"   => cli::methods::interactive(db).await?,
             "Templates" => cli::template::interactive(db).await?,
             "Invoices"  => cli::invoice::interactive(db).await?,
+            "Email"     => cli::email::interactive(db).await?,
             "Quit"      => break,
             _           => {}
         }

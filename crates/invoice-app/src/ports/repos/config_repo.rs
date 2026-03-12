@@ -11,6 +11,7 @@ pub struct UpsertConfig {
     pub username: String,
     pub password: String,
     pub fromname: String,
+    pub test_recipient: Option<String>,
 }
 
 #[async_trait]

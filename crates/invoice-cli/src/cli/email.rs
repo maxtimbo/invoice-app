@@ -11,6 +11,7 @@ use invoice_app::{
 
 use invoice_core::models::ids::InvoiceId;
 use invoice_cli::render::{render_pdf, render_html};
+use invoice_cli::prompt_optional;
 
 #[derive(Debug, Args)]
 pub struct EmailArgs {
@@ -26,6 +27,8 @@ pub enum EmailCommand {
     ShowConfig,
     /// set smtp config creates or replace
     SetConfig,
+    /// send a test email to verify settings
+    TestConfig,
 }
 
 pub async fn run<R>(repo: &R, args: EmailArgs) -> Result<()>
@@ -36,9 +39,18 @@ where
         Some(EmailCommand::Send { id })     => send(repo, id).await,
         Some(EmailCommand::ShowConfig)      => show_config(repo).await,
         Some(EmailCommand::SetConfig)       => set_config(repo).await,
+        Some(EmailCommand::TestConfig)      => test_config(repo).await,
         None => interactive(repo).await,
     }
 }
+
+pub async fn test_config<R: ConfigRepo>(repo: &R) -> Result<()> {
+    let config = repo.get_config().await?
+        .ok_or_else(|| anyhow!("email not configured"))?;
+    EmailService::test_config(&config).await
+}
+
+
 
 pub async fn send<R: InvoiceRepo + ConfigRepo>(repo: &R, id: i64) -> Result<()> {
     let config = repo
@@ -65,12 +77,7 @@ pub async fn send<R: InvoiceRepo + ConfigRepo>(repo: &R, id: i64) -> Result<()> 
 async fn show_config<R: ConfigRepo>(repo: &R) -> Result<()> {
     match repo.get_config().await? {
         None => println!("email not configured"),
-        Some(c) => {
-            println!("smtp server:\t\t{}:{}", c.smtp_server, c.port);
-            println!("tls:\t\t{}", c.tls);
-            println!("username:\t\t{}", c.username);
-            println!("from name:\t\t{}", c.fromname);
-        }
+        Some(c) => println!("{c}"),
     }
     Ok(())
 }
@@ -95,25 +102,33 @@ async fn set_config<R: ConfigRepo>(repo: &R) -> Result<()> {
         .prompt()?;
     let fromname    = Text::new("From display name:").with_default(c_fromname).prompt()?;
 
-    let password = if password.is_empty() {
+    let password    = if password.is_empty() {
         current
-            .map(|c| c.password)
+            .as_ref()
+            .map(|c| c.password.clone())
             .ok_or_else(|| anyhow!("password required"))?
     } else {
         password
     };
 
-    repo.upsert_config(UpsertConfig { smtp_server, port, tls, username, password, fromname })
+    let test_recipient = {
+        let current = current.as_ref()
+            .and_then(|c| c.test_recipient.as_deref())
+            .unwrap_or("");
+        prompt_optional("Test recipient email:", current)?
+    };
+
+    repo.upsert_config(UpsertConfig { smtp_server, port, tls, username, password, fromname, test_recipient })
         .await?;
 
     println!("Email config saved");
     Ok(())
 }
 
-async fn interactive<R: InvoiceRepo + ConfigRepo>(repo: &R) -> Result<()> {
+pub async fn interactive<R: InvoiceRepo + ConfigRepo>(repo: &R) -> Result<()> {
     use inquire::Select;
 
-    let options = vec!["Send invoice", "Show config", "Set config", "Back"];
+    let options = vec!["Send invoice", "Show config", "Set config", "Test config", "Back"];
     match Select::new("Email:", options).prompt()? {
         "Send invoice" => {
             let id_str = inquire::Text::new("Invoice ID:").prompt()?;
@@ -122,6 +137,7 @@ async fn interactive<R: InvoiceRepo + ConfigRepo>(repo: &R) -> Result<()> {
         }
         "Show config" => show_config(repo).await,
         "Set config" => set_config(repo).await,
+        "Test config" => test_config(repo).await,
         _ => Ok(()),
     }
 }

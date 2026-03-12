@@ -12,7 +12,7 @@ use invoice_app::ports::repos::{
 };
 use invoice_core::models::{
     attributes::InvoiceAttrs,
-    ids::{InvoiceId, TemplateId},
+    ids::InvoiceId,
     quantity::Quantity,
     stage::InvoiceStage,
     status::PaidStatus,
@@ -82,8 +82,6 @@ pub async fn interactive(db: &SqliteStorage) -> Result<()> {
     }
 }
 
-// ── Commands ─────────────────────────────────────────────────────────────────
-
 async fn list(db: &SqliteStorage) -> Result<()> {
     let all = db.list_invoice_summary().await?;
     if all.is_empty() {
@@ -103,31 +101,25 @@ async fn list(db: &SqliteStorage) -> Result<()> {
 }
 
 async fn add(db: &SqliteStorage) -> Result<()> {
-    // Template
     let templates = db.list_template().await?;
     if templates.is_empty() {
         return Err(anyhow!("No templates found. Add one first."));
     }
     let template = Select::new("Template:", templates).prompt()?;
 
-    // Date
     let date: NaiveDate = DateSelect::new("Invoice date:").prompt()?;
 
-    // Stage
     let stage = Select::new("Stage:", vec!["Invoice", "Quote"]).prompt()?;
     let stage = match stage {
         "Quote"   => InvoiceStage::Quote,
         _         => InvoiceStage::Invoice,
     };
 
-    // Flags
     let show_methods = Confirm::new("Show payment methods?").with_default(true).prompt()?;
     let show_notes   = Confirm::new("Show notes section?").with_default(true).prompt()?;
 
-    // Notes
     let notes = editor_optional("Notes (optional):", "")?;
 
-    // Items
     let all_items = db.list_item().await?;
     if all_items.is_empty() {
         return Err(anyhow!("No items found. Add one first."));
@@ -268,8 +260,6 @@ async fn pdf(id: InvoiceId, db: &SqliteStorage) -> Result<()> {
     println!("Written to {}", filename);
     Ok(())
 }
-
-// ── Helpers ───────────────────────────────────────────────────────────────────
 
 fn prompt_quantity(label: &str) -> Result<Quantity> {
     let input = Text::new(label).with_default("1").prompt()?;

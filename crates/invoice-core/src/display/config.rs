@@ -9,6 +9,10 @@ impl fmt::Display for Config {
         write!(f, "TLS:\t\t\t{}\n", self.tls)?;
         write!(f, "Username:\t\t{}\n", self.username)?;
         write!(f, "Password:\t\t{}\n", self.password)?;
-        write!(f, "From name:\t\t{}\n", self.fromname)
+        write!(f, "From name:\t\t{}\n", self.fromname)?;
+        if let Some(ref test_recipient) = self.test_recipient {
+            write!(f, "Test Recipient:\t\t{}\n", test_recipient)?;
+        }
+        Ok(())
     }
 }

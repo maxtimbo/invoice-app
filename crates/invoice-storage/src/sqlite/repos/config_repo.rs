@@ -21,8 +21,9 @@ impl ConfigRepo for SqliteStorage {
                 tls,
                 username,
                 password,
-                fromname
-            FROM email_config WHERE id = 1",
+                fromname,
+                test_recipient
+            FROM email_config WHERE id = 0",
         )
         .fetch_optional(&self.pool)
         .await?;
@@ -35,6 +36,7 @@ impl ConfigRepo for SqliteStorage {
             username:       r.get("username"),
             password:       r.get("password"),
             fromname:       r.get("fromname"),
+            test_recipient: r.get::<Option<String>, _>("test_recipient"),
         }))
     }
 
@@ -47,8 +49,9 @@ impl ConfigRepo for SqliteStorage {
                 tls,
                 username,
                 password,
-                fromname)
-            VALUES (1, ?, ?, ?, ?, ?, ?)",
+                fromname,
+                test_recipient)
+            VALUES (0, ?, ?, ?, ?, ?, ?, ?)",
         )
         .bind(&input.smtp_server)
         .bind(input.port as i64)
@@ -56,6 +59,7 @@ impl ConfigRepo for SqliteStorage {
         .bind(&input.username)
         .bind(&input.password)
         .bind(&input.fromname)
+        .bind(input.test_recipient)
         .execute(&self.pool)
         .await?;
 
