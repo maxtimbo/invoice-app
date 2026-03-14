@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block title %}{% if item %}Edit Item{% else %}New Item{% endif %}{% endblock %}
+
+{% block content %}
+<h1>{% if item %}Edit Item{% else %}New Item{% endif %}</h1>
+<div class="form-card">
+  <form method="post">
+    <label>
+      <span>Name</span>
+      <input name="name" value="{{ item.name | default(value='') }}">
+    </label>
+    <label>
+      <span>Rate</span>
+      <input name="rate" value="{{ item.rate | default(value='') }}">
+    </label>
+    <div class="actions">
+      <button type="submit">Save</button>
+      <a class="button button-muted" href="/items">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Companies{% endblock %}
+{% block content %}
+<h1>Companies</h1>
+<div class="actions">
+  <a class="button" href="/companies/new">New Company</a>
+</div>
+<table>
+  <thead>
+    <tr><th>Name</th><th></th></tr>
+  </thead>
+  <tbody>
+  {% for company in companies %}
+    <tr>
+      <td><a href="/companies/{{ company.id }}">{{ company.name }}</a></td>
+      <td>
+        <div class="td-actions">
+          <form method="post" action="/companies/{{ company.id }}/delete">
+            <button class="danger" type="submit">Delete</button>
+          </form>
+        </div>
+      </td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

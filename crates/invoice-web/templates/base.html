@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Invoice App{% endblock %}</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <nav>
+    <span class="nav-title">Invoice App</span>
+    <a href="/items">Items</a>
+    <a href="/companies">Companies</a>
+    <a href="/clients">Clients</a>
+    <a href="/terms">Terms</a>
+    <a href="/methods">Methods</a>
+    <a href="/templates">Templates</a>
+    <a href="/invoices">Invoices</a>
+  </nav>
+  <main>
+    {% block content %}{% endblock %}
+  </main>
+</body>
+</html>

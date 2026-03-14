@@ -5,5 +5,5 @@ members = [
     "crates/invoice-app",
     "crates/invoice-storage",
     "crates/invoice-cli",
-    "crates/invoice-gui",
+    "crates/invoice-web",
 ]

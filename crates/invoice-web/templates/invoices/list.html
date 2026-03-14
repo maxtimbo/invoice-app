@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Invoices{% endblock %}
+{% block content %}
+<h1>Invoices</h1>
+<div class="actions">
+  <a class="button" href="/invoices/new">New Invoice</a>
+</div>
+<table>
+  <thead>
+    <tr>
+      <th>#</th>
+      <th>Client</th>
+      <th>Issued</th>
+      <th>Due</th>
+      <th>Status</th>
+      <th>Total</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+  {% for inv in invoices %}
+    <tr>
+      <td>{{ inv.id }}</td>
+      <td>{{ inv.client_name }}</td>
+      <td>{{ inv.issued }}</td>
+      <td>{{ inv.due }}</td>
+      <td>{{ inv.status }}</td>
+      <td>${{ inv.total }}</td>
+      <td>
+        <div class="td-actions">
+            <a class="button button-green" href="/invoices/{{ inv.id }}/view" target="_blank">View</a>
+            <a class="button button-purple" href="/invoices/{{ inv.id }}/print" target="_blank">Print</a>
+            <a class="button" href="/invoices/{{ inv.id }}">Edit</a>
+          <form method="post" action="/invoices/{{ inv.id }}/delete">
+            <button class="danger" type="submit">Delete</button>
+          </form>
+        </div>
+      </td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

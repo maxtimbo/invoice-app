@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% block title %}Invoice #{{ invoice.id }}{% endblock %}
+{% block content %}
+<h1>Invoice #{{ invoice.id }}</h1>
+
+<div class="form-card" style="max-width:640px">
+  <table style="margin-bottom:1.5rem">
+    <tr><td><strong>Company</strong></td><td>{{ invoice.company_name }}</td></tr>
+    <tr><td><strong>Client</strong></td><td>{{ invoice.client_name }}</td></tr>
+    <tr><td><strong>Date</strong></td><td>{{ invoice.date }}</td></tr>
+    <tr><td><strong>Total</strong></td><td>${{ invoice.total }}</td></tr>
+  </table>
+
+  <h3 style="margin-bottom:0.75rem">Items</h3>
+  <table style="margin-bottom:1.5rem">
+    <thead>
+      <tr><th>Name</th><th>Rate</th><th>Qty</th><th>Subtotal</th></tr>
+    </thead>
+    <tbody>
+    {% for item in invoice.items %}
+      <tr>
+        <td>{{ item.name }}</td>
+        <td>${{ item.rate }}</td>
+        <td>{{ item.quantity }}</td>
+        <td>${{ item.subtotal }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+
+  <form method="post">
+    <label><span>Stage</span>
+      <select name="stage">
+        <option value="Invoice" {% if invoice.stage == "Invoice" %}selected{% endif %}>Invoice</option>
+        <option value="Quote"   {% if invoice.stage == "Quote" %}selected{% endif %}>Quote</option>
+      </select>
+    </label>
+
+    <label><span>Status</span>
+      <select name="status" id="status-select">
+        <option value="Waiting"  {% if invoice.status == "Waiting" %}selected{% endif %}>Waiting</option>
+        <option value="PastDue"  {% if invoice.status == "PastDue" %}selected{% endif %}>Past Due</option>
+        <option value="Paid"     {% if invoice.status == "Paid" %}selected{% endif %}>Paid</option>
+        <option value="Failed"   {% if invoice.status == "Failed" %}selected{% endif %}>Failed</option>
+        <option value="Refunded" {% if invoice.status == "Refunded" %}selected{% endif %}>Refunded</option>
+      </select>
+    </label>
+
+    <div id="status-date-field">
+      <label><span>Status Date</span>
+        <input name="status_date" type="date" value="{{ invoice.status_date | default(value='') }}">
+      </label>
+    </div>
+
+    <div id="status-check-field">
+      <label><span>Check Number</span>
+        <input name="status_check" value="{{ invoice.status_check | default(value='') }}">
+      </label>
+    </div>
+
+    <label class="checkbox-label">
+      <input name="show_methods" type="checkbox" {% if invoice.show_methods %}checked{% endif %}>
+      <span>Show payment methods</span>
+    </label>
+
+    <label class="checkbox-label">
+      <input name="show_notes" type="checkbox" {% if invoice.show_notes %}checked{% endif %}>
+      <span>Show notes</span>
+    </label>
+
+    <label><span>Notes</span>
+      <textarea name="notes" rows="3">{{ invoice.notes | default(value='') }}</textarea>
+    </label>
+
+    <div class="actions">
+      <button type="submit">Save</button>
+      <a class="button button-muted" href="/invoices">Cancel</a>
+    </div>
+  </form>
+</div>
+
+<script>
+  const select = document.getElementById('status-select');
+  const dateField = document.getElementById('status-date-field');
+  const checkField = document.getElementById('status-check-field');
+
+  function updateFields() {
+    const needsDate  = ['Paid', 'Failed', 'Refunded'].includes(select.value);
+    const needsCheck = select.value === 'Paid';
+    dateField.style.display  = needsDate  ? 'block' : 'none';
+    checkField.style.display = needsCheck ? 'block' : 'none';
+  }
+
+  select.addEventListener('change', updateFields);
+  updateFields();
+</script>
+{% endblock %}

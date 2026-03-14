@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block title %}{% if method %}Edit Payment Method{% else %}New Payment Method{% endif %}{% endblock %}
+
+{% block content %}
+<h1>{% if method %}Edit Payment Method{% else %}New Payment Method{% endif %}</h1>
+<div class="form-card">
+  <form method="post">
+    <label>
+      <span>Name</span>
+      <input name="name" value="{{ method.name | default(value='') }}">
+    </label>
+    <label>
+      <span>Link</span>
+      <input name="link" value="{{ method.link | default(value='') }}">
+    </label>
+    <label><span>QR Code</span>
+      <input name="qr" type="file" accept="image/png,image/jpeg,image/webp">
+    </label>
+    {% if method.qr %}
+      <img src="{{ method.qr }}" style="height:64px;margin-bottom:1rem;display:block">
+    {% endif %}
+    <div class="actions">
+      <button type="submit">Save</button>
+      <a class="button button-muted" href="/methods">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

@@ -85,6 +85,10 @@ impl CompanyRepo for SqliteStorage {
             company.contact = contact;
         }
 
+        if let Some(logo) = patch.logo {
+            company.logo = Some(logo);
+        }
+
         let c = company.contact;
 
         sqlx::query(
