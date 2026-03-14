@@ -12,6 +12,7 @@ pub struct Item {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ItemDetail {
+    pub id: ItemId,
     pub name: String,
     pub rate: Currency,
     pub quantity: Quantity,

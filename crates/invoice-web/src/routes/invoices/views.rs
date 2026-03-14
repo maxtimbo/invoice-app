@@ -14,6 +14,7 @@ use invoice_app::render::view::InvoiceView;
 use invoice_app::commands::paths::Paths;
 use invoice_core::models::ids::InvoiceId;
 use invoice_core::models::status::PaidStatus;
+use invoice_core::models::stage::InvoiceStage;
 use crate::state::AppState;
 use super::{InvoiceSummaryView, InvoiceEditView, InvoiceItemView};
 
@@ -76,27 +77,30 @@ pub async fn new_form(State(s): State<S>) -> impl IntoResponse {
 
 pub async fn edit_form(State(s): State<S>, Path(id): Path<i64>) -> impl IntoResponse {
     let invoice = s.db.get_invoice(InvoiceId(id)).await.unwrap().unwrap();
+    let all_items = s.db.list_item().await.unwrap();
     let subtotals = invoice.calculate_subtotals();
-
-    let (status, status_date, status_check) = flatten_status(&invoice.attributes.status);
+    let current_item_ids: Vec<i64> = subtotals.iter().map(|d| d.id.0).collect();
     let total = format!("{:.2}", invoice.calculate_total().inner());
+    let (status, status_date, status_check) = flatten_status(&invoice.attributes.status);
 
     let view = InvoiceEditView {
         id: invoice.id.0,
         date: invoice.date.format("%Y-%m-%d").to_string(),
+        template_id: invoice.template.id.0,
         client_name: invoice.template.client.name.clone(),
         company_name: invoice.template.company.name.clone(),
         show_methods: invoice.attributes.show_methods,
         show_notes: invoice.attributes.show_notes,
         stage: match invoice.attributes.stage {
-            invoice_core::models::stage::InvoiceStage::Quote => "Quote".into(),
-            invoice_core::models::stage::InvoiceStage::Invoice => "Invoice".into(),
+            InvoiceStage::Quote => "Quote".into(),
+            InvoiceStage::Invoice => "Invoice".into(),
         },
         status: status.to_string(),
         status_date,
         status_check,
-        notes: invoice.notes,
+        notes: invoice.notes.clone(),
         items: subtotals.iter().map(|d| InvoiceItemView {
+            id: d.id.0,
             name: d.name.clone(),
             rate: format!("{:.2}", d.rate.inner()),
             quantity: d.quantity.inner().to_string(),
@@ -107,6 +111,8 @@ pub async fn edit_form(State(s): State<S>, Path(id): Path<i64>) -> impl IntoResp
 
     let mut ctx = Context::new();
     ctx.insert("invoice", &view);
+    ctx.insert("all_items", &all_items);
+    ctx.insert("current_item_ids", &current_item_ids);
     Html(s.tera.render("invoices/edit.html", &ctx).unwrap())
 }
 

@@ -18,6 +18,7 @@ pub struct InvoiceSummaryView {
 
 #[derive(Serialize)]
 pub struct InvoiceItemView {
+    pub id: i64,
     pub name: String,
     pub rate: String,
     pub quantity: String,
@@ -27,6 +28,7 @@ pub struct InvoiceItemView {
 #[derive(Serialize)]
 pub struct InvoiceEditView {
     pub id: i64,
+    pub template_id: i64,
     pub date: String,
     pub client_name: String,
     pub company_name: String,
@@ -43,7 +45,7 @@ pub struct InvoiceEditView {
 
 #[derive(Deserialize)]
 pub struct UpdateInvoiceForm {
-    pub show_methods: Option<String>, // checkboxes are absent when unchecked
+    pub show_methods: Option<String>,
     pub show_notes: Option<String>,
     pub stage: String,
     pub status: String,

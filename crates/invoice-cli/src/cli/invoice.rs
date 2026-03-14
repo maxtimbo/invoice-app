@@ -206,6 +206,7 @@ async fn update(id: InvoiceId, db: &SqliteStorage) -> Result<()> {
         show_methods: new_show_methods,
         show_notes:   new_show_notes,
         notes:        new_notes,
+        ..Default::default()
     })
     .await?;
 

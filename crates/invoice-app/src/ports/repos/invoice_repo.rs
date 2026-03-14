@@ -26,6 +26,8 @@ pub struct UpdateInvoice {
     pub stage: Option<invoice_core::models::stage::InvoiceStage>,
     pub status: Option<invoice_core::models::status::PaidStatus>,
     pub notes: Option<String>,
+    pub template: Option<TemplateId>,
+    pub items: Option<Vec<(ItemId, Quantity)>>,
 }
 
 #[async_trait]

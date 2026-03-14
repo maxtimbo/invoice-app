@@ -86,6 +86,7 @@ pub async fn update(
         stage:        Some(stage),
         status:       Some(status),
         notes,
+        ..Default::default()
     }).await.unwrap();
     Redirect::to("/invoices")
 }
@@ -115,4 +116,55 @@ fn parse_status_form(
         "Refunded" => PaidStatus::Refunded  { date: parse_date(date) },
         _          => PaidStatus::Waiting,
     }
+}
+
+pub async fn add_item(
+    State(s): State<S>,
+    Path(id): Path<i64>,
+    Form(input): Form<HashMap<String, String>>,
+) -> impl IntoResponse {
+    let item_id = input["item_id"].parse::<i64>().unwrap();
+    let qty_str = input.get("quantity").map(|s| s.as_str()).unwrap_or("1");
+    let dec = Decimal::from_str(qty_str).unwrap_or(Decimal::ONE);
+    let qty = Quantity::new(dec).unwrap_or(Quantity::new(Decimal::ONE).unwrap());
+
+    // fetch existing items and append
+    let invoice = s.db.get_invoice(InvoiceId(id)).await.unwrap().unwrap();
+    let mut items: Vec<(ItemId, Quantity)> = invoice.items
+        .into_iter()
+        .map(|(item, qty)| (item.id, qty))
+        .collect();
+
+    // replace if already present, otherwise push
+    if let Some(existing) = items.iter_mut().find(|(i, _)| i.0 == item_id) {
+        existing.1 = qty;
+    } else {
+        items.push((ItemId(item_id), qty));
+    }
+
+    s.db.update_invoice(InvoiceId(id), UpdateInvoice {
+        items: Some(items),
+        ..Default::default()
+    }).await.unwrap();
+
+    Redirect::to(&format!("/invoices/{id}"))
+}
+
+pub async fn remove_item(
+    State(s): State<S>,
+    Path((id, item_id)): Path<(i64, i64)>,
+) -> impl IntoResponse {
+    let invoice = s.db.get_invoice(InvoiceId(id)).await.unwrap().unwrap();
+    let items: Vec<(ItemId, Quantity)> = invoice.items
+        .into_iter()
+        .filter(|(item, _)| item.id.0 != item_id)
+        .map(|(item, qty)| (item.id, qty))
+        .collect();
+
+    s.db.update_invoice(InvoiceId(id), UpdateInvoice {
+        items: Some(items),
+        ..Default::default()
+    }).await.unwrap();
+
+    Redirect::to(&format!("/invoices/{id}"))
 }

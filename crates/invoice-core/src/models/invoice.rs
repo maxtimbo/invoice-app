@@ -30,6 +30,7 @@ impl Invoice {
             .map(|(item, quantity)| {
                 let subtotal_dec = item.rate.inner() * quantity.inner();
                 ItemDetail {
+                    id: item.id,
                     name: item.name.clone(),
                     rate: item.rate.clone(),
                     quantity: quantity.clone(),
