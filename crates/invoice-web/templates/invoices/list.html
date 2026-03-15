@@ -14,6 +14,7 @@
       <th>Due</th>
       <th>Status</th>
       <th>Total</th>
+      <th>Last Sent</th>
       <th></th>
     </tr>
   </thead>
@@ -26,6 +27,7 @@
       <td>{{ inv.due }}</td>
       <td>{{ inv.status }}</td>
       <td>${{ inv.total }}</td>
+      <td>{% if inv.message_sent %}{{ inv.message_sent }}{% else %}-{% endif %}</td>
       <td>
         <div class="td-actions">
             <a class="button button-green" href="/invoices/{{ inv.id }}/view">View</a>

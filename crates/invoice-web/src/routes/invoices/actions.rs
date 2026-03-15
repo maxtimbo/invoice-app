@@ -9,6 +9,7 @@ use axum::{
 use chrono::NaiveDate;
 use rust_decimal::Decimal;
 use invoice_app::ports::repos::invoice_repo::{InvoiceRepo, CreateInvoice, UpdateInvoice};
+use invoice_app::ports::repos::config_repo::ConfigRepo;
 use invoice_core::models::ids::{InvoiceId, ItemId, TemplateId};
 use invoice_core::models::attributes::InvoiceAttrs;
 use invoice_core::models::stage::InvoiceStage;
@@ -167,4 +168,32 @@ pub async fn remove_item(
     }).await.unwrap();
 
     Redirect::to(&format!("/invoices/{id}"))
+}
+
+pub async fn send_email(State(s): State<S>, Path(id): Path<i64>) -> impl IntoResponse {
+    use invoice_app::render::TemplateEngine;
+    use invoice_app::services::email_service::EmailService;
+    use invoice_app::commands::paths::Paths;
+    use chrono::Local;
+
+    let invoice = s.db.get_invoice(InvoiceId(id)).await.unwrap().unwrap();
+    let config  = s.db.get_config().await.unwrap().unwrap();
+    let paths   = Paths::init().unwrap();
+    let engine  = TemplateEngine::new(&paths.templates).unwrap();
+    let html    = engine.render(&invoice).unwrap();
+    let pdf     = engine.to_pdf(&html).unwrap();
+    let filename = format!("invoice_{:04}.pdf", id);
+
+    match EmailService::send(&config, &invoice, html, pdf, filename).await {
+        Ok(_)  => {
+            s.db.update_invoice(InvoiceId(id), UpdateInvoice {
+                message_sent: Some(Local::now().date_naive()),
+                ..Default::default()
+            }).await.unwrap();
+        },
+        Err(e) => {
+            eprintln!("Email error: {e}");
+        }
+    }
+    Redirect::to(&format!("/invoices/{id}/view"))
 }

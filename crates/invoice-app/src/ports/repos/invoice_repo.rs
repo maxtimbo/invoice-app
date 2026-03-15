@@ -28,6 +28,7 @@ pub struct UpdateInvoice {
     pub notes: Option<String>,
     pub template: Option<TemplateId>,
     pub items: Option<Vec<(ItemId, Quantity)>>,
+    pub message_sent: Option<NaiveDate>,
 }
 
 #[async_trait]

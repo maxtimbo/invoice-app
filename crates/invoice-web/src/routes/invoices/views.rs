@@ -59,6 +59,7 @@ pub async fn list(State(s): State<S>) -> impl IntoResponse {
             due: s.due.format("%Y-%m-%d").to_string(),
             status: status_str,
             total: format!("{:.2}", s.total.inner()),
+            message_sent: s.message_sent.map(|d| d.format("%Y-%m-%d").to_string()).unwrap_or_default(),
         }
     }).collect();
     let mut ctx = Context::new();
@@ -67,8 +68,20 @@ pub async fn list(State(s): State<S>) -> impl IntoResponse {
 }
 
 pub async fn new_form(State(s): State<S>) -> impl IntoResponse {
+    use serde::Serialize;
+    #[derive(Serialize)]
+    struct ItemOption { id: i64, name: String, rate: String }
+
     let templates = s.db.list_template().await.unwrap();
-    let items = s.db.list_item().await.unwrap();
+    let items: Vec<ItemOption> = s.db.list_item().await.unwrap()
+        .into_iter()
+        .map(|item| ItemOption {
+            id: item.id.0,
+            name: item.name,
+            rate: format!("{:.2}", item.rate.inner()),
+        })
+        .collect();
+
     let mut ctx = Context::new();
     ctx.insert("templates", &templates);
     ctx.insert("items", &items);
@@ -107,6 +120,7 @@ pub async fn edit_form(State(s): State<S>, Path(id): Path<i64>) -> impl IntoResp
             subtotal: format!("{:.2}", d.subtotal.inner()),
         }).collect(),
         total,
+        message_sent: invoice.message_sent.map(|d| d.format("%Y-%m-%d").to_string()),
     };
 
     let mut ctx = Context::new();

@@ -14,6 +14,7 @@ use tower_http::services::ServeDir;
 async fn main() -> Result<()> {
     let paths = Paths::init()?;
     let db = SqliteStorage::connect(paths.db.to_str().unwrap()).await?;
+    db.migrate().await?;
 
     let mut tera = Tera::new("crates/invoice-web/templates/**/*.html")?;
     tera.autoescape_on(vec!["html"]);
@@ -54,6 +55,9 @@ async fn main() -> Result<()> {
         .route("/invoices/{id}/print",                  get(routes::invoices::print))
         .route("/invoices/{id}/items/add",              axum::routing::post(routes::invoices::add_item))
         .route("/invoices/{id}/items/{item_id}/remove", axum::routing::post(routes::invoices::remove_item))
+        .route("/settings/email",                       get(routes::settings::email_form).post(routes::settings::save_email_config))
+        .route("/settings/email/test",                  axum::routing::post(routes::settings::test_email_config))
+        .route("/invoices/{id}/email",                  axum::routing::post(routes::invoices::send_email))
         .nest_service("/static",                        ServeDir::new("crates/invoice-web/static"))
         .with_state(state);
 

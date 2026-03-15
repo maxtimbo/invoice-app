@@ -17,19 +17,22 @@
     <tr><th>Name</th><th>Rate</th><th>Qty</th><th>Subtotal</th><th></th></tr>
   </thead>
   <tbody>
-  {% for item in invoice.items %}
-    <tr>
-      <td>{{ item.name }}</td>
-      <td>${{ item.rate }}</td>
-      <td>{{ item.quantity }}</td>
-      <td>${{ item.subtotal }}</td>
-      <td>
+      {% for item in invoice.items %}
+  <tr id="row-{{ item.id }}">
+    <td>{{ item.name }}</td>
+    <td>${{ item.rate }}</td>
+    <td id="qty-display-{{ item.id }}">{{ item.quantity }}</td>
+    <td>${{ item.subtotal }}</td>
+    <td>
+      <div class="td-actions">
+        <button type="button" onclick="editQty({{ item.id }}, '{{ item.quantity }}')">Edit Qty</button>
         <form method="post" action="/invoices/{{ invoice.id }}/items/{{ item.id }}/remove">
           <button class="danger" type="submit">Remove</button>
         </form>
-      </td>
-    </tr>
-  {% endfor %}
+      </div>
+    </td>
+  </tr>
+{% endfor %}
   <tr>
     <td colspan="3" style="text-align:right"><strong>Total</strong></td>
     <td><strong>${{ invoice.total }}</strong></td>
@@ -39,7 +42,7 @@
 </table>
 
 <details style="margin-bottom:1.5rem">
-  <summary style="cursor:pointer;font-weight:500;margin-bottom:0.75rem">+ Add Item</summary>
+  <summary style="cursor:pointer;font-weight:500;margin-bottom:0.75rem">Add Item</summary>
   <form method="post" action="/invoices/{{ invoice.id }}/items/add"
         style="display:flex;gap:0.75rem;align-items:flex-end;flex-wrap:wrap;margin-top:0.75rem">
     <label style="flex:1;min-width:160px"><span>Item</span>
@@ -57,6 +60,26 @@
     <button type="submit" style="margin-bottom:1rem">Add</button>
   </form>
 </details>
+<button type="button" class="button button-muted" onclick="document.getElementById('quick-item-modal').style.display='flex'" style="margin-bottom:1.5rem">
+  + New Item
+</button>
+
+<div id="quick-item-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:100;align-items:center;justify-content:center">
+  <div style="background:white;padding:1.5rem;border-radius:6px;width:320px;box-shadow:0 4px 24px rgba(0,0,0,0.2)">
+    <h3 style="margin-bottom:1rem">New Item</h3>
+    <label style="margin-bottom:0.75rem;display:block"><span style="font-weight:500;font-size:.9rem;display:block;margin-bottom:.25rem">Name</span>
+      <input id="qi-name" style="width:100%;padding:.4rem .6rem;border:1px solid #ccc;border-radius:4px">
+    </label>
+    <label style="margin-bottom:1rem;display:block"><span style="font-weight:500;font-size:.9rem;display:block;margin-bottom:.25rem">Rate</span>
+      <input id="qi-rate" type="number" min="0" step="0.01" style="width:100%;padding:.4rem .6rem;border:1px solid #ccc;border-radius:4px">
+    </label>
+    <div id="qi-error" style="color:#cc4444;margin-bottom:.75rem;display:none"></div>
+    <div style="display:flex;gap:.5rem">
+      <button type="button" onclick="quickCreateItem()">Create</button>
+      <button type="button" class="button button-muted" onclick="closeQuickItem()">Cancel</button>
+    </div>
+  </div>
+</div>
 
 
   <form method="post">
@@ -114,6 +137,76 @@
   const select = document.getElementById('status-select');
   const dateField = document.getElementById('status-date-field');
   const checkField = document.getElementById('status-check-field');
+
+function editQty(id, current) {
+  const cell = document.getElementById(`qty-display-${id}`);
+  cell.innerHTML = `
+    <form method="post" action="/invoices/{{ invoice.id }}/items/add"
+          style="display:flex;gap:.4rem;align-items:center">
+      <input type="hidden" name="item_id" value="${id}">
+      <input name="quantity" type="number" min="0.001" step="0.001"
+             value="${current}" style="width:80px;padding:.3rem .4rem">
+      <button type="submit">✓</button>
+    </form>`;
+  cell.querySelector('input[name=quantity]').focus();
+}
+
+    function closeQuickItem() {
+    document.getElementById('quick-item-modal').style.display = 'none';
+    document.getElementById('qi-name').value = '';
+    document.getElementById('qi-rate').value = '';
+    document.getElementById('qi-error').style.display = 'none';
+  }
+
+  async function quickCreateItem() {
+    const name = document.getElementById('qi-name').value.trim();
+    const rate = document.getElementById('qi-rate').value.trim();
+    const err  = document.getElementById('qi-error');
+
+    if (!name || !rate) {
+      err.textContent = 'Name and rate are required.';
+      err.style.display = 'block';
+      return;
+    }
+
+    const body = new URLSearchParams({ name, rate });
+    const res  = await fetch('/items', { method: 'POST', body });
+
+    if (!res.ok) {
+      err.textContent = 'Failed to create item.';
+      err.style.display = 'block';
+      return;
+    }
+
+    // The server redirects to /items — grab the new item from the list
+    const listRes  = await fetch('/items');
+    const html     = await listRes.text();
+    const doc      = new DOMParser().parseFromString(html, 'text/html');
+    const rows     = doc.querySelectorAll('tbody tr');
+    const lastRow  = rows[rows.length - 1];
+    const newName  = lastRow?.querySelector('td a')?.textContent?.trim();
+    const newRate  = lastRow?.querySelector('td:nth-child(2)')?.textContent?.trim();
+    const newHref  = lastRow?.querySelector('td a')?.getAttribute('href') ?? '';
+    const newId    = newHref.split('/').pop();
+
+    if (!newId || !newName) {
+      err.textContent = 'Item created but could not refresh list.';
+      err.style.display = 'block';
+      return;
+    }
+
+    // Add to the select dropdown
+    const sel = document.getElementById('item-select');
+    const opt = document.createElement('option');
+    opt.value           = newId;
+    opt.dataset.name    = newName;
+    opt.dataset.rate    = newRate;
+    opt.textContent     = `${newName} ($${newRate})`;
+    opt.selected        = true;
+    sel.appendChild(opt);
+
+    closeQuickItem();
+  }
 
   function updateFields() {
     const needsDate  = ['Paid', 'Failed', 'Refunded'].includes(select.value);

@@ -18,4 +18,5 @@ pub(crate) struct InvoiceSkel {
     pub attributes: InvoiceAttrs,
     pub notes: Option<String>,
     pub items: Vec<InvoiceItemSkel>,
+    pub message_sent: Option<NaiveDate>,
 }

@@ -6,6 +6,9 @@
   <h1>{{ inv.invoice_stage }} #{{ inv.id }}</h1>
   <div class="actions">
     <a class="button" href="/invoices/{{ inv.id }}">Edit</a>
+    <form method="post" action="/invoices/{{ inv.id }}/email" style="display:inline">
+  <button type="submit" class="button button-green">Send Email</button>
+</form>
     <a class="button button-purple" href="/invoices/{{ inv.id }}/print" target="_blank">Download PDF</a>
   </div>
 </div>
@@ -51,6 +54,9 @@
     <tr><td><strong>Terms</strong></td><td>{{ inv.template.terms.name }}</td></tr>
     {% if inv.status %}
     <tr><td><strong>Status</strong></td><td>{{ inv.status }}{% if inv.status_date %} — {{ inv.status_date }}{% endif %}</td></tr>
+    {% endif %}
+    {% if inv.message_sent %}
+    <tr><td><strong>Last Sent</strong></td><td>{{ inv.message_sent }}</td></tr>
     {% endif %}
   </table>
 </div>

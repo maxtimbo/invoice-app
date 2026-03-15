@@ -45,7 +45,8 @@ impl SqliteStorage {
                 status_check,
                 notes,
                 items_json,
-                total
+                total,
+                message_sent
             FROM invoices WHERE id = ?")
             .bind(id.0)
             .fetch_optional(&self.pool)
@@ -83,6 +84,10 @@ impl SqliteStorage {
                 })
             })
             .collect::<Result<Vec<_>>>()?;
+
+        let message_sent = r.get::<Option<String>, _>("message_sent")
+            .and_then(|s| NaiveDate::parse_from_str(&s, "%Y%m%d").ok());
+
         Ok(InvoiceSkel {
             id: InvoiceId(r.get::<i64, _>("id")),
             template_id: TemplateId(r.get::<i64, _>("template_id")),
@@ -95,6 +100,7 @@ impl SqliteStorage {
             },
             notes: r.get("notes"),
             items,
+            message_sent,
         })
     }
     async fn hydrate_invoice(&self, skel: InvoiceSkel) -> Result<Invoice> {
@@ -116,6 +122,7 @@ impl SqliteStorage {
             attributes: skel.attributes,
             notes: skel.notes,
             items,
+            message_sent: skel.message_sent,
         })
     }
     fn compute_total(items: &[(Item, Quantity)]) -> i64 {
@@ -145,6 +152,7 @@ impl InvoiceRepo for SqliteStorage {
                 i.status_date,
                 i.status_check,
                 i.total,
+                i.message_sent,
                 c.name as client_name,
                 t.due as terms_due
             FROM invoices i
@@ -169,6 +177,9 @@ impl InvoiceRepo for SqliteStorage {
             let status_check: Option<String> = r.get("status_check");
             let status = parse_status(&status_str, status_date, status_check)?;
             let total = Currency::from_cents(r.get::<i64, _>("total"));
+            let message_sent = r.get::<Option<String>, _>("message_sent")
+                .and_then(|s| NaiveDate::parse_from_str(&s, "%Y%m%d").ok());
+
             summaries.push(InvoiceSummary {
                 id: InvoiceId(r.get::<i64, _>("id")),
                 issued: date,
@@ -176,6 +187,7 @@ impl InvoiceRepo for SqliteStorage {
                 total,
                 status,
                 due: due_date,
+                message_sent,
             });
         }
         Ok(summaries)
@@ -203,9 +215,21 @@ impl InvoiceRepo for SqliteStorage {
 
         let id = sqlx::query(
             "INSERT INTO invoices
-                (template_id, date, show_methods, show_notes, stage,
-                 status, status_date, status_check, notes, items_json, total)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
+                (
+                    template_id,
+                    date,
+                    show_methods,
+                    show_notes,
+                    stage,
+                    status,
+                    status_date,
+                    status_check,
+                    notes,
+                    items_json,
+                    total,
+                    message_sent
+                )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULL)")
             .bind(input.template.0)
             .bind(input.date.format("%Y%m%d").to_string())
             .bind(input.attributes.show_methods)
@@ -233,21 +257,52 @@ impl InvoiceRepo for SqliteStorage {
         if let Some(v) = patch.stage { skel.attributes.stage = v; }
         if let Some(v) = patch.status { skel.attributes.status = v; }
         if let Some(v) = patch.notes { skel.notes = Some(v); }
+        if let Some(v) = patch.template  {skel.template_id = v; }
+        if let Some(v) = patch.message_sent { skel.message_sent = Some(v); }
+
+        if let Some(new_items) = patch.items {
+            skel.items = new_items
+                .into_iter()
+                .map(|(item_id, qty)| InvoiceItemSkel { item: item_id, quantity: qty })
+                .collect();
+        }
+
 
         let (status_str, status_date, status_check) = encode_status(&skel.attributes.status);
         let stage_str = encode_stage(&skel.attributes.stage);
 
+        let mut hydrated_items = Vec::new();
+        for item_skel in &skel.items {
+            let item = self.get_item(item_skel.item).await?
+                .ok_or_else(|| anyhow!("item {} not found", item_skel.item.0))?;
+            hydrated_items.push((item, item_skel.quantity.clone()));
+        }
+
+        let total = Self::compute_total(&hydrated_items);
+
+        let items_json = serde_json::to_string(
+            &skel.items.iter().map(|s| ItemRecord {
+                item: s.item.0,
+                quantity: s.quantity.to_scaled(),
+            }).collect::<Vec<_>>()
+        )?;
+
         sqlx::query(
             "UPDATE invoices
             SET
+                template_id = ?,
                 show_methods = ?,
                 show_notes = ?,
                 stage = ?,
                 status = ?,
                 status_date = ?,
                 status_check = ?,
-                notes = ?
+                notes = ?,
+                items_json = ?,
+                total = ?,
+                message_sent = ?
             WHERE id = ?")
+            .bind(skel.template_id.0)
             .bind(skel.attributes.show_methods)
             .bind(skel.attributes.show_notes)
             .bind(stage_str)
@@ -255,6 +310,9 @@ impl InvoiceRepo for SqliteStorage {
             .bind(status_date)
             .bind(status_check)
             .bind(skel.notes)
+            .bind(items_json)
+            .bind(total)
+            .bind(skel.message_sent.map(|d| d.format("%Y%m%d").to_string()))
             .bind(id.0)
             .execute(&self.pool)
             .await?;

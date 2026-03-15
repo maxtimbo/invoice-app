@@ -13,4 +13,5 @@ pub struct InvoiceSummary {
     pub due: NaiveDate,
     pub status: PaidStatus,
     pub total: Currency,
+    pub message_sent: Option<NaiveDate>,
 }

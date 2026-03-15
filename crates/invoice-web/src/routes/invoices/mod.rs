@@ -14,6 +14,7 @@ pub struct InvoiceSummaryView {
     pub due: String,
     pub status: String,
     pub total: String,
+    pub message_sent: String,
 }
 
 #[derive(Serialize)]
@@ -41,6 +42,7 @@ pub struct InvoiceEditView {
     pub notes: Option<String>,
     pub items: Vec<InvoiceItemView>,
     pub total: String,
+    pub message_sent: Option<String>,
 }
 
 #[derive(Deserialize)]
