@@ -5,19 +5,19 @@
 {% block content %}
 <h1>{% if terms %}Edit Term{% else %}New Term{% endif %}</h1>
 <div class="form-card">
-  <form method="post">
-    <label>
-      <span>Name</span>
-      <input name="name" value="{{ terms.name | default(value='') }}">
-    </label>
-    <label>
-      <span>Due</span>
-      <input name="due" value="{{ terms.due | default(value='') }}">
-    </label>
-    <div class="actions">
-      <button type="submit">Save</button>
-      <a class="button button-muted" href="/terms">Cancel</a>
-    </div>
-  </form>
+    <form method="post">
+        <label>
+            <span>Name</span>
+            <input name="name" value="{{ terms.name | default(value='') }}">
+        </label>
+        <label>
+            <span>Due</span>
+            <input name="due" value="{{ terms.due | default(value='') }}">
+        </label>
+        <div class="actions">
+            <button type="submit">Save</button>
+            <a class="button button-muted" href="/terms">Cancel</a>
+        </div>
+    </form>
 </div>
 {% endblock %}

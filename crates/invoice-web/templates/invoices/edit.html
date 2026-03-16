@@ -4,143 +4,143 @@
 <h1>Invoice #{{ invoice.id }}</h1>
 
 <div class="form-card" style="max-width:640px">
-  <table style="margin-bottom:1.5rem">
-    <tr><td><strong>Company</strong></td><td>{{ invoice.company_name }}</td></tr>
-    <tr><td><strong>Client</strong></td><td>{{ invoice.client_name }}</td></tr>
-    <tr><td><strong>Date</strong></td><td>{{ invoice.date }}</td></tr>
-    <tr><td><strong>Total</strong></td><td>${{ invoice.total }}</td></tr>
-  </table>
+    <table style="margin-bottom:1.5rem">
+        <tr><td><strong>Company</strong></td><td>{{ invoice.company_name }}</td></tr>
+        <tr><td><strong>Client</strong></td><td>{{ invoice.client_name }}</td></tr>
+        <tr><td><strong>Date</strong></td><td>{{ invoice.date }}</td></tr>
+        <tr><td><strong>Total</strong></td><td>${{ invoice.total }}</td></tr>
+    </table>
 
-  <h3 style="margin-bottom:0.75rem">Items</h3>
-<table style="margin-bottom:1rem">
-  <thead>
-    <tr><th>Name</th><th>Rate</th><th>Qty</th><th>Subtotal</th><th></th></tr>
-  </thead>
-  <tbody>
-      {% for item in invoice.items %}
-  <tr id="row-{{ item.id }}">
-    <td>{{ item.name }}</td>
-    <td>${{ item.rate }}</td>
-    <td id="qty-display-{{ item.id }}">{{ item.quantity }}</td>
-    <td>${{ item.subtotal }}</td>
-    <td>
-      <div class="td-actions">
-        <button type="button" onclick="editQty({{ item.id }}, '{{ item.quantity }}')">Edit Qty</button>
-        <form method="post" action="/invoices/{{ invoice.id }}/items/{{ item.id }}/remove">
-          <button class="danger" type="submit">Remove</button>
+    <h3 style="margin-bottom:0.75rem">Items</h3>
+    <table style="margin-bottom:1rem">
+        <thead>
+            <tr><th>Name</th><th>Rate</th><th>Qty</th><th>Subtotal</th><th></th></tr>
+        </thead>
+        <tbody>
+            {% for item in invoice.items %}
+            <tr id="row-{{ item.id }}">
+                <td>{{ item.name }}</td>
+                <td>${{ item.rate }}</td>
+                <td id="qty-display-{{ item.id }}">{{ item.quantity }}</td>
+                <td>${{ item.subtotal }}</td>
+                <td>
+                    <div class="td-actions">
+                        <button type="button" onclick="editQty({{ item.id }}, '{{ item.quantity }}')">Edit Qty</button>
+                        <form method="post" action="/invoices/{{ invoice.id }}/items/{{ item.id }}/remove">
+                            <button class="danger" type="submit">Remove</button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+            <tr>
+                <td colspan="3" style="text-align:right"><strong>Total</strong></td>
+                <td><strong>${{ invoice.total }}</strong></td>
+                <td></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <details style="margin-bottom:1.5rem">
+        <summary style="cursor:pointer;font-weight:500;margin-bottom:0.75rem">Add Item</summary>
+        <form method="post" action="/invoices/{{ invoice.id }}/items/add"
+                            style="display:flex;gap:0.75rem;align-items:flex-end;flex-wrap:wrap;margin-top:0.75rem">
+            <label style="flex:1;min-width:160px"><span>Item</span>
+                <select name="item_id">
+                    {% for item in all_items %}
+                    {% if item.id not in current_item_ids %}
+                    <option value="{{ item.id }}">{{ item.name }} (${{ item.rate }})</option>
+                    {% endif %}
+                    {% endfor %}
+                </select>
+            </label>
+            <label style="width:100px"><span>Quantity</span>
+                <input name="quantity" type="number" min="0.001" step="0.001" value="1">
+            </label>
+            <button type="submit" style="margin-bottom:1rem">Add</button>
         </form>
-      </div>
-    </td>
-  </tr>
-{% endfor %}
-  <tr>
-    <td colspan="3" style="text-align:right"><strong>Total</strong></td>
-    <td><strong>${{ invoice.total }}</strong></td>
-    <td></td>
-  </tr>
-  </tbody>
-</table>
+    </details>
+    <button type="button" class="button button-muted" onclick="document.getElementById('quick-item-modal').style.display='flex'" style="margin-bottom:1.5rem">
+        + New Item
+    </button>
 
-<details style="margin-bottom:1.5rem">
-  <summary style="cursor:pointer;font-weight:500;margin-bottom:0.75rem">Add Item</summary>
-  <form method="post" action="/invoices/{{ invoice.id }}/items/add"
-        style="display:flex;gap:0.75rem;align-items:flex-end;flex-wrap:wrap;margin-top:0.75rem">
-    <label style="flex:1;min-width:160px"><span>Item</span>
-      <select name="item_id">
-        {% for item in all_items %}
-          {% if item.id not in current_item_ids %}
-            <option value="{{ item.id }}">{{ item.name }} (${{ item.rate }})</option>
-          {% endif %}
-        {% endfor %}
-      </select>
-    </label>
-    <label style="width:100px"><span>Quantity</span>
-      <input name="quantity" type="number" min="0.001" step="0.001" value="1">
-    </label>
-    <button type="submit" style="margin-bottom:1rem">Add</button>
-  </form>
-</details>
-<button type="button" class="button button-muted" onclick="document.getElementById('quick-item-modal').style.display='flex'" style="margin-bottom:1.5rem">
-  + New Item
-</button>
-
-<div id="quick-item-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:100;align-items:center;justify-content:center">
-  <div style="background:white;padding:1.5rem;border-radius:6px;width:320px;box-shadow:0 4px 24px rgba(0,0,0,0.2)">
-    <h3 style="margin-bottom:1rem">New Item</h3>
-    <label style="margin-bottom:0.75rem;display:block"><span style="font-weight:500;font-size:.9rem;display:block;margin-bottom:.25rem">Name</span>
-      <input id="qi-name" style="width:100%;padding:.4rem .6rem;border:1px solid #ccc;border-radius:4px">
-    </label>
-    <label style="margin-bottom:1rem;display:block"><span style="font-weight:500;font-size:.9rem;display:block;margin-bottom:.25rem">Rate</span>
-      <input id="qi-rate" type="number" min="0" step="0.01" style="width:100%;padding:.4rem .6rem;border:1px solid #ccc;border-radius:4px">
-    </label>
-    <div id="qi-error" style="color:#cc4444;margin-bottom:.75rem;display:none"></div>
-    <div style="display:flex;gap:.5rem">
-      <button type="button" onclick="quickCreateItem()">Create</button>
-      <button type="button" class="button button-muted" onclick="closeQuickItem()">Cancel</button>
-    </div>
-  </div>
-</div>
-
-
-  <form method="post">
-    <label><span>Stage</span>
-      <select name="stage">
-        <option value="Invoice" {% if invoice.stage == "Invoice" %}selected{% endif %}>Invoice</option>
-        <option value="Quote"   {% if invoice.stage == "Quote" %}selected{% endif %}>Quote</option>
-      </select>
-    </label>
-
-    <label><span>Status</span>
-      <select name="status" id="status-select">
-        <option value="Waiting"  {% if invoice.status == "Waiting" %}selected{% endif %}>Waiting</option>
-        <option value="PastDue"  {% if invoice.status == "PastDue" %}selected{% endif %}>Past Due</option>
-        <option value="Paid"     {% if invoice.status == "Paid" %}selected{% endif %}>Paid</option>
-        <option value="Failed"   {% if invoice.status == "Failed" %}selected{% endif %}>Failed</option>
-        <option value="Refunded" {% if invoice.status == "Refunded" %}selected{% endif %}>Refunded</option>
-      </select>
-    </label>
-
-    <div id="status-date-field">
-      <label><span>Status Date</span>
-        <input name="status_date" type="date" value="{{ invoice.status_date | default(value='') }}">
-      </label>
+    <div id="quick-item-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:100;align-items:center;justify-content:center">
+        <div style="background:white;padding:1.5rem;border-radius:6px;width:320px;box-shadow:0 4px 24px rgba(0,0,0,0.2)">
+            <h3 style="margin-bottom:1rem">New Item</h3>
+            <label style="margin-bottom:0.75rem;display:block"><span style="font-weight:500;font-size:.9rem;display:block;margin-bottom:.25rem">Name</span>
+                <input id="qi-name" style="width:100%;padding:.4rem .6rem;border:1px solid #ccc;border-radius:4px">
+            </label>
+            <label style="margin-bottom:1rem;display:block"><span style="font-weight:500;font-size:.9rem;display:block;margin-bottom:.25rem">Rate</span>
+                <input id="qi-rate" type="number" min="0" step="0.01" style="width:100%;padding:.4rem .6rem;border:1px solid #ccc;border-radius:4px">
+            </label>
+            <div id="qi-error" style="color:#cc4444;margin-bottom:.75rem;display:none"></div>
+            <div style="display:flex;gap:.5rem">
+                <button type="button" onclick="quickCreateItem()">Create</button>
+                <button type="button" class="button button-muted" onclick="closeQuickItem()">Cancel</button>
+            </div>
+        </div>
     </div>
 
-    <div id="status-check-field">
-      <label><span>Check Number</span>
-        <input name="status_check" value="{{ invoice.status_check | default(value='') }}">
-      </label>
-    </div>
 
-    <label class="checkbox-label">
-      <input name="show_methods" type="checkbox" {% if invoice.show_methods %}checked{% endif %}>
-      <span>Show payment methods</span>
-    </label>
+    <form method="post">
+        <label><span>Stage</span>
+            <select name="stage">
+                <option value="Invoice" {% if invoice.stage == "Invoice" %}selected{% endif %}>Invoice</option>
+                <option value="Quote"   {% if invoice.stage == "Quote" %}selected{% endif %}>Quote</option>
+            </select>
+        </label>
 
-    <label class="checkbox-label">
-      <input name="show_notes" type="checkbox" {% if invoice.show_notes %}checked{% endif %}>
-      <span>Show notes</span>
-    </label>
+        <label><span>Status</span>
+            <select name="status" id="status-select">
+                <option value="Waiting"  {% if invoice.status == "Waiting" %}selected{% endif %}>Waiting</option>
+                <option value="PastDue"  {% if invoice.status == "PastDue" %}selected{% endif %}>Past Due</option>
+                <option value="Paid"     {% if invoice.status == "Paid" %}selected{% endif %}>Paid</option>
+                <option value="Failed"   {% if invoice.status == "Failed" %}selected{% endif %}>Failed</option>
+                <option value="Refunded" {% if invoice.status == "Refunded" %}selected{% endif %}>Refunded</option>
+            </select>
+        </label>
 
-    <label><span>Notes</span>
-      <textarea name="notes" rows="3">{{ invoice.notes | default(value='') }}</textarea>
-    </label>
+        <div id="status-date-field">
+            <label><span>Status Date</span>
+                <input name="status_date" type="date" value="{{ invoice.status_date | default(value='') }}">
+            </label>
+        </div>
 
-    <div class="actions">
-      <button type="submit">Save</button>
-      <a class="button button-muted" href="/invoices">Cancel</a>
-    </div>
-  </form>
+        <div id="status-check-field">
+            <label><span>Check Number</span>
+                <input name="status_check" value="{{ invoice.status_check | default(value='') }}">
+            </label>
+        </div>
+
+        <label class="checkbox-label">
+            <input name="show_methods" type="checkbox" {% if invoice.show_methods %}checked{% endif %}>
+            <span>Show payment methods</span>
+        </label>
+
+        <label class="checkbox-label">
+            <input name="show_notes" type="checkbox" {% if invoice.show_notes %}checked{% endif %}>
+            <span>Show notes</span>
+        </label>
+
+        <label><span>Notes</span>
+            <textarea name="notes" rows="3">{{ invoice.notes | default(value='') }}</textarea>
+        </label>
+
+        <div class="actions">
+            <button type="submit">Save</button>
+            <a class="button button-muted" href="/invoices">Cancel</a>
+        </div>
+    </form>
 </div>
 
 <script>
-  const select = document.getElementById('status-select');
-  const dateField = document.getElementById('status-date-field');
-  const checkField = document.getElementById('status-check-field');
+    const select = document.getElementById('status-select');
+    const dateField = document.getElementById('status-date-field');
+    const checkField = document.getElementById('status-check-field');
 
-function editQty(id, current) {
-  const cell = document.getElementById(`qty-display-${id}`);
-  cell.innerHTML = `
+    function editQty(id, current) {
+        const cell = document.getElementById(`qty-display-${id}`);
+        cell.innerHTML = `
     <form method="post" action="/invoices/{{ invoice.id }}/items/add"
           style="display:flex;gap:.4rem;align-items:center">
       <input type="hidden" name="item_id" value="${id}">
@@ -148,74 +148,74 @@ function editQty(id, current) {
              value="${current}" style="width:80px;padding:.3rem .4rem">
       <button type="submit">✓</button>
     </form>`;
-  cell.querySelector('input[name=quantity]').focus();
-}
+        cell.querySelector('input[name=quantity]').focus();
+    }
 
     function closeQuickItem() {
-    document.getElementById('quick-item-modal').style.display = 'none';
-    document.getElementById('qi-name').value = '';
-    document.getElementById('qi-rate').value = '';
-    document.getElementById('qi-error').style.display = 'none';
-  }
-
-  async function quickCreateItem() {
-    const name = document.getElementById('qi-name').value.trim();
-    const rate = document.getElementById('qi-rate').value.trim();
-    const err  = document.getElementById('qi-error');
-
-    if (!name || !rate) {
-      err.textContent = 'Name and rate are required.';
-      err.style.display = 'block';
-      return;
+        document.getElementById('quick-item-modal').style.display = 'none';
+        document.getElementById('qi-name').value = '';
+        document.getElementById('qi-rate').value = '';
+        document.getElementById('qi-error').style.display = 'none';
     }
 
-    const body = new URLSearchParams({ name, rate });
-    const res  = await fetch('/items', { method: 'POST', body });
+    async function quickCreateItem() {
+        const name = document.getElementById('qi-name').value.trim();
+        const rate = document.getElementById('qi-rate').value.trim();
+        const err  = document.getElementById('qi-error');
 
-    if (!res.ok) {
-      err.textContent = 'Failed to create item.';
-      err.style.display = 'block';
-      return;
+        if (!name || !rate) {
+            err.textContent = 'Name and rate are required.';
+            err.style.display = 'block';
+            return;
+        }
+
+        const body = new URLSearchParams({ name, rate });
+        const res  = await fetch('/items', { method: 'POST', body });
+
+        if (!res.ok) {
+            err.textContent = 'Failed to create item.';
+            err.style.display = 'block';
+            return;
+        }
+
+        // The server redirects to /items — grab the new item from the list
+        const listRes  = await fetch('/items');
+        const html     = await listRes.text();
+        const doc      = new DOMParser().parseFromString(html, 'text/html');
+        const rows     = doc.querySelectorAll('tbody tr');
+        const lastRow  = rows[rows.length - 1];
+        const newName  = lastRow?.querySelector('td a')?.textContent?.trim();
+        const newRate  = lastRow?.querySelector('td:nth-child(2)')?.textContent?.trim();
+        const newHref  = lastRow?.querySelector('td a')?.getAttribute('href') ?? '';
+        const newId    = newHref.split('/').pop();
+
+        if (!newId || !newName) {
+            err.textContent = 'Item created but could not refresh list.';
+            err.style.display = 'block';
+            return;
+        }
+
+        // Add to the select dropdown
+        const sel = document.getElementById('item-select');
+        const opt = document.createElement('option');
+        opt.value           = newId;
+        opt.dataset.name    = newName;
+        opt.dataset.rate    = newRate;
+        opt.textContent     = `${newName} ($${newRate})`;
+        opt.selected        = true;
+        sel.appendChild(opt);
+
+        closeQuickItem();
     }
 
-    // The server redirects to /items — grab the new item from the list
-    const listRes  = await fetch('/items');
-    const html     = await listRes.text();
-    const doc      = new DOMParser().parseFromString(html, 'text/html');
-    const rows     = doc.querySelectorAll('tbody tr');
-    const lastRow  = rows[rows.length - 1];
-    const newName  = lastRow?.querySelector('td a')?.textContent?.trim();
-    const newRate  = lastRow?.querySelector('td:nth-child(2)')?.textContent?.trim();
-    const newHref  = lastRow?.querySelector('td a')?.getAttribute('href') ?? '';
-    const newId    = newHref.split('/').pop();
-
-    if (!newId || !newName) {
-      err.textContent = 'Item created but could not refresh list.';
-      err.style.display = 'block';
-      return;
+    function updateFields() {
+        const needsDate  = ['Paid', 'Failed', 'Refunded'].includes(select.value);
+        const needsCheck = select.value === 'Paid';
+        dateField.style.display  = needsDate  ? 'block' : 'none';
+        checkField.style.display = needsCheck ? 'block' : 'none';
     }
 
-    // Add to the select dropdown
-    const sel = document.getElementById('item-select');
-    const opt = document.createElement('option');
-    opt.value           = newId;
-    opt.dataset.name    = newName;
-    opt.dataset.rate    = newRate;
-    opt.textContent     = `${newName} ($${newRate})`;
-    opt.selected        = true;
-    sel.appendChild(opt);
-
-    closeQuickItem();
-  }
-
-  function updateFields() {
-    const needsDate  = ['Paid', 'Failed', 'Refunded'].includes(select.value);
-    const needsCheck = select.value === 'Paid';
-    dateField.style.display  = needsDate  ? 'block' : 'none';
-    checkField.style.display = needsCheck ? 'block' : 'none';
-  }
-
-  select.addEventListener('change', updateFields);
-  updateFields();
+    select.addEventListener('change', updateFields);
+    updateFields();
 </script>
 {% endblock %}

@@ -3,41 +3,41 @@
 {% block content %}
 <h1>{% if company %}Edit Company{% else %}New Company{% endif %}</h1>
 <div class="form-card">
-  <form method="post" enctype="multipart/form-data">
-    <label><span>Name</span>
-      <input name="name" value="{{ company.name | default(value='') }}" required>
-    </label>
-    <label><span>Logo</span>
-      <input name="logo" type="file" accept="image/png,image/jpeg,image/webp">
-    </label>
-    {% if company.logo %}
-      <img src="{{ company.logo }}" style="height:64px;margin-bottom:1rem;display:block">
-    {% endif %}
-    <label><span>Phone</span>
-      <input name="phone" value="{{ company.contact.phone | default(value='') }}">
-    </label>
-    <label><span>Email</span>
-      <input name="email" type="email" value="{{ company.contact.email | default(value='') }}">
-    </label>
-    <label><span>Address</span>
-      <input name="addr1" value="{{ company.contact.addr1 | default(value='') }}">
-    </label>
-    <label><span>Address 2</span>
-      <input name="addr2" value="{{ company.contact.addr2 | default(value='') }}">
-    </label>
-    <label><span>City</span>
-      <input name="city" value="{{ company.contact.city | default(value='') }}">
-    </label>
-    <label><span>State</span>
-      <input name="state" value="{{ company.contact.state | default(value='') }}">
-    </label>
-    <label><span>Zip</span>
-      <input name="zip" value="{{ company.contact.zip | default(value='') }}">
-    </label>
-    <div class="actions">
-      <button type="submit">Save</button>
-      <a class="button button-muted" href="/companies">Cancel</a>
-    </div>
-  </form>
+    <form method="post" enctype="multipart/form-data">
+        <label><span>Name</span>
+            <input name="name" value="{{ company.name | default(value='') }}" required>
+        </label>
+        <label><span>Logo</span>
+            <input name="logo" type="file" accept="image/png,image/jpeg,image/webp">
+        </label>
+        {% if company.logo %}
+        <img src="{{ company.logo }}" style="height:64px;margin-bottom:1rem;display:block">
+        {% endif %}
+        <label><span>Phone</span>
+            <input name="phone" value="{{ company.contact.phone | default(value='') }}">
+        </label>
+        <label><span>Email</span>
+            <input name="email" type="email" value="{{ company.contact.email | default(value='') }}">
+        </label>
+        <label><span>Address</span>
+            <input name="addr1" value="{{ company.contact.addr1 | default(value='') }}">
+        </label>
+        <label><span>Address 2</span>
+            <input name="addr2" value="{{ company.contact.addr2 | default(value='') }}">
+        </label>
+        <label><span>City</span>
+            <input name="city" value="{{ company.contact.city | default(value='') }}">
+        </label>
+        <label><span>State</span>
+            <input name="state" value="{{ company.contact.state | default(value='') }}">
+        </label>
+        <label><span>Zip</span>
+            <input name="zip" value="{{ company.contact.zip | default(value='') }}">
+        </label>
+        <div class="actions">
+            <button type="submit">Save</button>
+            <a class="button button-muted" href="/companies">Cancel</a>
+        </div>
+    </form>
 </div>
 {% endblock %}

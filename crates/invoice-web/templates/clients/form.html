@@ -4,35 +4,35 @@
 {% block content %}
 <h1>{% if client %}Edit Client{% else %}New Client{% endif %}</h1>
 <div class="form-card">
-  <form method="post" enctype="multipart/form-data">
-    <label><span>Name</span>
-      <input name="name" value="{{ client.name | default(value='') }}" required>
-    </label>
-    <label><span>Phone</span>
-      <input name="phone" value="{{ client.contact.phone | default(value='') }}">
-    </label>
-    <label><span>Email</span>
-      <input name="email" type="email" value="{{ client.contact.email | default(value='') }}">
-    </label>
-    <label><span>Address</span>
-      <input name="addr1" value="{{ client.contact.addr1 | default(value='') }}">
-    </label>
-    <label><span>Address 2</span>
-      <input name="addr2" value="{{ client.contact.addr2 | default(value='') }}">
-    </label>
-    <label><span>City</span>
-      <input name="city" value="{{ client.contact.city | default(value='') }}">
-    </label>
-    <label><span>State</span>
-      <input name="state" value="{{ client.contact.state | default(value='') }}">
-    </label>
-    <label><span>Zip</span>
-      <input name="zip" value="{{ client.contact.zip | default(value='') }}">
-    </label>
-    <div class="actions">
-      <button type="submit">Save</button>
-      <a class="button button-muted" href="/clients">Cancel</a>
-    </div>
-  </form>
+    <form method="post" enctype="multipart/form-data">
+        <label><span>Name</span>
+            <input name="name" value="{{ client.name | default(value='') }}" required>
+        </label>
+        <label><span>Phone</span>
+            <input name="phone" value="{{ client.contact.phone | default(value='') }}">
+        </label>
+        <label><span>Email</span>
+            <input name="email" type="email" value="{{ client.contact.email | default(value='') }}">
+        </label>
+        <label><span>Address</span>
+            <input name="addr1" value="{{ client.contact.addr1 | default(value='') }}">
+        </label>
+        <label><span>Address 2</span>
+            <input name="addr2" value="{{ client.contact.addr2 | default(value='') }}">
+        </label>
+        <label><span>City</span>
+            <input name="city" value="{{ client.contact.city | default(value='') }}">
+        </label>
+        <label><span>State</span>
+            <input name="state" value="{{ client.contact.state | default(value='') }}">
+        </label>
+        <label><span>Zip</span>
+            <input name="zip" value="{{ client.contact.zip | default(value='') }}">
+        </label>
+        <div class="actions">
+            <button type="submit">Save</button>
+            <a class="button button-muted" href="/clients">Cancel</a>
+        </div>
+    </form>
 </div>
 {% endblock %}

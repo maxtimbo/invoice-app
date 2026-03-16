@@ -3,66 +3,66 @@
 {% block content %}
 <h1>{% if template %}Edit Template{% else %}New Template{% endif %}</h1>
 <div class="form-card">
-  <form method="post">
-    <label><span>Name</span>
-      <input name="name" value="{{ template.name | default(value='') }}" required>
-    </label>
+    <form method="post">
+        <label><span>Name</span>
+            <input name="name" value="{{ template.name | default(value='') }}" required>
+        </label>
 
-    <label><span>Company</span>
-      <select name="company_id">
-        {% for c in companies %}
-          <option value="{{ c.id }}"
-            {% if template and template.company.id == c.id %}selected{% endif %}>
-            {{ c.name }}
-          </option>
-        {% endfor %}
-      </select>
-    </label>
+        <label><span>Company</span>
+            <select name="company_id">
+                {% for c in companies %}
+                <option value="{{ c.id }}"
+                        {% if template and template.company.id == c.id %}selected{% endif %}>
+                {{ c.name }}
+                </option>
+                {% endfor %}
+            </select>
+        </label>
 
-    <label><span>Client</span>
-      <select name="client_id">
-        {% for c in clients %}
-          <option value="{{ c.id }}"
-            {% if template and template.client.id == c.id %}selected{% endif %}>
-            {{ c.name }}
-          </option>
-        {% endfor %}
-      </select>
-    </label>
+        <label><span>Client</span>
+            <select name="client_id">
+                {% for c in clients %}
+                <option value="{{ c.id }}"
+                        {% if template and template.client.id == c.id %}selected{% endif %}>
+                {{ c.name }}
+                </option>
+                {% endfor %}
+            </select>
+        </label>
 
-    <label><span>Terms</span>
-      <select name="terms_id">
-        {% for t in terms %}
-          <option value="{{ t.id }}"
-            {% if template and template.terms.id == t.id %}selected{% endif %}>
-            {{ t.name }} ({{ t.due }} days)
-          </option>
-        {% endfor %}
-      </select>
-    </label>
+        <label><span>Terms</span>
+            <select name="terms_id">
+                {% for t in terms %}
+                <option value="{{ t.id }}"
+                        {% if template and template.terms.id == t.id %}selected{% endif %}>
+                {{ t.name }} ({{ t.due }} days)
+                </option>
+                {% endfor %}
+            </select>
+        </label>
 
-    <label><span>Payment Methods</span>
-      <select name="method_ids" multiple size="4">
-        {% for m in methods %}
-          <option value="{{ m.id }}"
-            {% if template %}
-              {% for tm in template.method %}
-                {% if tm.id == m.id %}selected{% endif %}
-              {% endfor %}
-            {% endif %}>
-            {{ m.name }}
-          </option>
-        {% endfor %}
-      </select>
-    </label>
-    <small style="display:block;margin-top:-0.5rem;margin-bottom:1rem;color:#666">
-      Hold Ctrl / Cmd to select multiple
-    </small>
+        <label><span>Payment Methods</span>
+            <select name="method_ids" multiple size="4">
+                {% for m in methods %}
+                <option value="{{ m.id }}"
+                        {% if template %}
+                        {% for tm in template.method %}
+                        {% if tm.id == m.id %}selected{% endif %}
+                        {% endfor %}
+                        {% endif %}>
+                {{ m.name }}
+                </option>
+                {% endfor %}
+            </select>
+        </label>
+        <small style="display:block;margin-top:-0.5rem;margin-bottom:1rem;color:#666">
+            Hold Ctrl / Cmd to select multiple
+        </small>
 
-    <div class="actions">
-      <button type="submit">Save</button>
-      <a class="button button-muted" href="/templates">Cancel</a>
-    </div>
-  </form>
+        <div class="actions">
+            <button type="submit">Save</button>
+            <a class="button button-muted" href="/templates">Cancel</a>
+        </div>
+    </form>
 </div>
 {% endblock %}

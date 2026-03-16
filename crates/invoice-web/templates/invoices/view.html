@@ -3,110 +3,110 @@
 {% block content %}
 
 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem">
-  <h1>{{ inv.invoice_stage }} #{{ inv.id }}</h1>
-  <div class="actions">
-    <a class="button" href="/invoices/{{ inv.id }}">Edit</a>
-    <form method="post" action="/invoices/{{ inv.id }}/email" style="display:inline">
-  <button type="submit" class="button button-green">Send Email</button>
-</form>
-    <a class="button button-purple" href="/invoices/{{ inv.id }}/print" target="_blank">Download PDF</a>
-  </div>
+    <h1>{{ inv.invoice_stage }} #{{ inv.id }}</h1>
+    <div class="actions">
+        <a class="button" href="/invoices/{{ inv.id }}">Edit</a>
+        <form method="post" action="/invoices/{{ inv.id }}/email" style="display:inline">
+            <button type="submit" class="button button-green">Send Email</button>
+        </form>
+        <a class="button button-purple" href="/invoices/{{ inv.id }}/print" target="_blank">Download PDF</a>
+    </div>
 </div>
 
 <div style="display:grid;grid-template-columns:1fr 1fr;gap:2rem;margin-bottom:2rem">
 
-  <div>
-    <h3>{{ inv.template.company.name }}</h3>
-    {% if inv.template.company.logo %}
-      <img src="{{ inv.template.company.logo }}" style="max-height:80px;margin-bottom:0.5rem;display:block">
-    {% endif %}
-    {% if inv.template.company.contact.phone %}<div>{{ inv.template.company.contact.phone }}</div>{% endif %}
-    {% if inv.template.company.contact.email %}<div>{{ inv.template.company.contact.email }}</div>{% endif %}
-    {% if inv.template.company.contact.addr1 %}<div>{{ inv.template.company.contact.addr1 }}</div>{% endif %}
-    {% if inv.template.company.contact.addr2 %}<div>{{ inv.template.company.contact.addr2 }}</div>{% endif %}
-    {% if inv.template.company.contact.city %}
-      <div>
-        {{ inv.template.company.contact.city }}{% if inv.template.company.contact.state %}, {{ inv.template.company.contact.state }}{% endif %}{% if inv.template.company.contact.zip %} {{ inv.template.company.contact.zip }}{% endif %}
-      </div>
-    {% endif %}
-  </div>
+    <div>
+        <h3>{{ inv.template.company.name }}</h3>
+        {% if inv.template.company.logo %}
+        <img src="{{ inv.template.company.logo }}" style="max-height:80px;margin-bottom:0.5rem;display:block">
+        {% endif %}
+        {% if inv.template.company.contact.phone %}<div>{{ inv.template.company.contact.phone }}</div>{% endif %}
+        {% if inv.template.company.contact.email %}<div>{{ inv.template.company.contact.email }}</div>{% endif %}
+        {% if inv.template.company.contact.addr1 %}<div>{{ inv.template.company.contact.addr1 }}</div>{% endif %}
+        {% if inv.template.company.contact.addr2 %}<div>{{ inv.template.company.contact.addr2 }}</div>{% endif %}
+        {% if inv.template.company.contact.city %}
+        <div>
+            {{ inv.template.company.contact.city }}{% if inv.template.company.contact.state %}, {{ inv.template.company.contact.state }}{% endif %}{% if inv.template.company.contact.zip %} {{ inv.template.company.contact.zip }}{% endif %}
+        </div>
+        {% endif %}
+    </div>
 
-  <div>
-    <h3>Bill To</h3>
-    <div><strong>{{ inv.template.client.name }}</strong></div>
-    {% if inv.template.client.contact.phone %}<div>{{ inv.template.client.contact.phone }}</div>{% endif %}
-    {% if inv.template.client.contact.email %}<div>{{ inv.template.client.contact.email }}</div>{% endif %}
-    {% if inv.template.client.contact.addr1 %}<div>{{ inv.template.client.contact.addr1 }}</div>{% endif %}
-    {% if inv.template.client.contact.addr2 %}<div>{{ inv.template.client.contact.addr2 }}</div>{% endif %}
-    {% if inv.template.client.contact.city %}
-      <div>
-        {{ inv.template.client.contact.city }}{% if inv.template.client.contact.state %}, {{ inv.template.client.contact.state }}{% endif %}{% if inv.template.client.contact.zip %} {{ inv.template.client.contact.zip }}{% endif %}
-      </div>
-    {% endif %}
-  </div>
+    <div>
+        <h3>Bill To</h3>
+        <div><strong>{{ inv.template.client.name }}</strong></div>
+        {% if inv.template.client.contact.phone %}<div>{{ inv.template.client.contact.phone }}</div>{% endif %}
+        {% if inv.template.client.contact.email %}<div>{{ inv.template.client.contact.email }}</div>{% endif %}
+        {% if inv.template.client.contact.addr1 %}<div>{{ inv.template.client.contact.addr1 }}</div>{% endif %}
+        {% if inv.template.client.contact.addr2 %}<div>{{ inv.template.client.contact.addr2 }}</div>{% endif %}
+        {% if inv.template.client.contact.city %}
+        <div>
+            {{ inv.template.client.contact.city }}{% if inv.template.client.contact.state %}, {{ inv.template.client.contact.state }}{% endif %}{% if inv.template.client.contact.zip %} {{ inv.template.client.contact.zip }}{% endif %}
+        </div>
+        {% endif %}
+    </div>
 
 </div>
 
 <div style="display:grid;grid-template-columns:1fr 1fr;gap:2rem;margin-bottom:2rem">
-  <table>
-    <tr><td><strong>Date</strong></td><td>{{ inv.date }}</td></tr>
-    <tr><td><strong>Due Date</strong></td><td>{{ inv.due_date }}</td></tr>
-    <tr><td><strong>Terms</strong></td><td>{{ inv.template.terms.name }}</td></tr>
-    {% if inv.status %}
-    <tr><td><strong>Status</strong></td><td>{{ inv.status }}{% if inv.status_date %} — {{ inv.status_date }}{% endif %}</td></tr>
-    {% endif %}
-    {% if inv.message_sent %}
-    <tr><td><strong>Last Sent</strong></td><td>{{ inv.message_sent }}</td></tr>
-    {% endif %}
-  </table>
+    <table>
+        <tr><td><strong>Date</strong></td><td>{{ inv.date }}</td></tr>
+        <tr><td><strong>Due Date</strong></td><td>{{ inv.due_date }}</td></tr>
+        <tr><td><strong>Terms</strong></td><td>{{ inv.template.terms.name }}</td></tr>
+        {% if inv.status %}
+        <tr><td><strong>Status</strong></td><td>{{ inv.status }}{% if inv.status_date %} — {{ inv.status_date }}{% endif %}</td></tr>
+        {% endif %}
+        {% if inv.message_sent %}
+        <tr><td><strong>Last Sent</strong></td><td>{{ inv.message_sent }}</td></tr>
+        {% endif %}
+    </table>
 </div>
 
 <table style="margin-bottom:2rem">
-  <thead>
-    <tr>
-      <th>Item</th>
-      <th style="text-align:right">Qty</th>
-      <th style="text-align:right">Rate</th>
-      <th style="text-align:right">Subtotal</th>
-    </tr>
-  </thead>
-  <tbody>
-  {% for item in inv.items %}
-    <tr>
-      <td>{{ item.name }}</td>
-      <td style="text-align:right">{{ item.quantity }}</td>
-      <td style="text-align:right">${{ item.rate }}</td>
-      <td style="text-align:right">${{ item.subtotal }}</td>
-    </tr>
-  {% endfor %}
-  </tbody>
-  <tfoot>
-    <tr>
-      <td colspan="3" style="text-align:right"><strong>Total</strong></td>
-      <td style="text-align:right"><strong>${{ inv.total }}</strong></td>
-    </tr>
-  </tfoot>
+    <thead>
+        <tr>
+            <th>Item</th>
+            <th style="text-align:right">Qty</th>
+            <th style="text-align:right">Rate</th>
+            <th style="text-align:right">Subtotal</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for item in inv.items %}
+        <tr>
+            <td>{{ item.name }}</td>
+            <td style="text-align:right">{{ item.quantity }}</td>
+            <td style="text-align:right">${{ item.rate }}</td>
+            <td style="text-align:right">${{ item.subtotal }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+    <tfoot>
+        <tr>
+            <td colspan="3" style="text-align:right"><strong>Total</strong></td>
+            <td style="text-align:right"><strong>${{ inv.total }}</strong></td>
+        </tr>
+    </tfoot>
 </table>
 
 {% if inv.show_methods and inv.template.methods %}
 <div style="margin-bottom:2rem">
-  <h3>Payment Methods</h3>
-  <div style="display:flex;gap:2rem;flex-wrap:wrap">
-  {% for method in inv.template.methods %}
-    <div>
-      <div><strong>{{ method.name }}</strong></div>
-      {% if method.link %}<div><a href="{{ method.link }}">{{ method.link }}</a></div>{% endif %}
-      {% if method.qr %}<img src="{{ method.qr }}" style="max-width:120px;margin-top:0.5rem">{% endif %}
+    <h3>Payment Methods</h3>
+    <div style="display:flex;gap:2rem;flex-wrap:wrap">
+        {% for method in inv.template.methods %}
+        <div>
+            <div><strong>{{ method.name }}</strong></div>
+            {% if method.link %}<div><a href="{{ method.link }}">{{ method.link }}</a></div>{% endif %}
+            {% if method.qr %}<img src="{{ method.qr }}" style="max-width:120px;margin-top:0.5rem">{% endif %}
+        </div>
+        {% endfor %}
     </div>
-  {% endfor %}
-  </div>
 </div>
 {% endif %}
 
 {% if inv.show_notes and inv.notes %}
 <div>
-  <h3>Notes</h3>
-  <p>{{ inv.notes }}</p>
+    <h3>Notes</h3>
+    <p>{{ inv.notes }}</p>
 </div>
 {% endif %}
 

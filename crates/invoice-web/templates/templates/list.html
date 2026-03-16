@@ -3,40 +3,40 @@
 {% block content %}
 <h1>Templates</h1>
 <div class="actions">
-  <a class="button" href="/templates/new">New Template</a>
+    <a class="button" href="/templates/new">New Template</a>
 </div>
 <table>
-  <thead>
-    <tr>
-      <th>Name</th>
-      <th>Company</th>
-      <th>Client</th>
-      <th>Terms</th>
-      <th>Methods</th>
-      <th></th>
-    </tr>
-  </thead>
-  <tbody>
-  {% for t in templates %}
-    <tr>
-      <td><a href="/templates/{{ t.id }}">{{ t.name }}</a></td>
-      <td>{{ t.company.name }}</td>
-      <td>{{ t.client.name }}</td>
-      <td>{{ t.terms.name }}</td>
-      <td>
-        {% for m in t.method %}
-          {{ m.name }}{% if not loop.last %}, {% endif %}
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Company</th>
+            <th>Client</th>
+            <th>Terms</th>
+            <th>Methods</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for t in templates %}
+        <tr>
+            <td><a href="/templates/{{ t.id }}">{{ t.name }}</a></td>
+            <td>{{ t.company.name }}</td>
+            <td>{{ t.client.name }}</td>
+            <td>{{ t.terms.name }}</td>
+            <td>
+                {% for m in t.method %}
+                {{ m.name }}{% if not loop.last %}, {% endif %}
+                {% endfor %}
+            </td>
+            <td>
+                <div class="td-actions">
+                    <form method="post" action="/templates/{{ t.id }}/delete">
+                        <button class="danger" type="submit">Delete</button>
+                    </form>
+                </div>
+            </td>
+        </tr>
         {% endfor %}
-      </td>
-      <td>
-        <div class="td-actions">
-          <form method="post" action="/templates/{{ t.id }}/delete">
-            <button class="danger" type="submit">Delete</button>
-          </form>
-        </div>
-      </td>
-    </tr>
-  {% endfor %}
-  </tbody>
+    </tbody>
 </table>
 {% endblock %}

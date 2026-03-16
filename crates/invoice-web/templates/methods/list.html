@@ -5,30 +5,30 @@
 {% block content %}
 <h1>Methods</h1>
 <div class="actions">
-  <a class="button" href="/methods/new">New Method</a>
+    <a class="button" href="/methods/new">New Method</a>
 </div>
 <table>
-  <thead>
-    <tr>
-      <th>Name</th>
-      <th>Rate</th>
-      <th></th>
-    </tr>
-  </thead>
-  <tbody>
-  {% for method in methods %}
-    <tr>
-        <td><a href="/methods/{{ method.id }}">{{ method.name }}</a></td>
-      <td>{{ method.link }}</td>
-      <td>
-        <div class="td-actions">
-          <form method="post" action="/methods/{{ method.id }}/delete">
-            <button class="danger" type="submit">Delete</button>
-          </form>
-        </div>
-      </td>
-    </tr>
-  {% endfor %}
-  </tbody>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Rate</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for method in methods %}
+        <tr>
+            <td><a href="/methods/{{ method.id }}">{{ method.name }}</a></td>
+            <td>{{ method.link }}</td>
+            <td>
+                <div class="td-actions">
+                    <form method="post" action="/methods/{{ method.id }}/delete">
+                        <button class="danger" type="submit">Delete</button>
+                    </form>
+                </div>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
 </table>
 {% endblock %}
