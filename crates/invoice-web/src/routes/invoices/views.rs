@@ -21,11 +21,17 @@ use super::{InvoiceSummaryView, InvoiceEditView, InvoiceItemView};
 
 type S = Arc<AppState>;
 
-pub async fn view(State(s): State<S>, Path(id): Path<i64>) -> impl IntoResponse {
+pub async fn view(
+    State(s): State<S>,
+    Path(id): Path<i64>,
+    Query(params): Query<HashMap<String, String>>,
+) -> impl IntoResponse {
     let invoice = s.db.get_invoice(InvoiceId(id)).await.unwrap().unwrap();
     let view = InvoiceView::from(&invoice);
     let mut ctx = Context::new();
     ctx.insert("inv", &view);
+    ctx.insert("sent", &params.get("sent").map(|s| s.as_str()).unwrap_or(""));
+    ctx.insert("sent_msg", &params.get("msg").map(|s| s.replace('+', " ")));
     Html(s.tera.render("invoices/view.html", &ctx).unwrap())
 }
 

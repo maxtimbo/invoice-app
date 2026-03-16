@@ -1,43 +1,60 @@
 {% extends "base.html" %}
 {% block title %}Email Settings{% endblock %}
 {% block content %}
-<h1>Email Settings</h1>
+  <h1>Email Settings</h1>
+  {% if test == "ok" %}
+    <div style="background:#d4edda;color:#155724;border:1px solid #c3e6cb;
+                padding:0.75rem 1rem;border-radius:4px;margin-bottom:1rem;
+                display:flex;justify-content:space-between;align-items:center">
+      <span>✓ Test email sent successfully.</span>
+      <button type="button" onclick="this.parentElement.remove()"
+                            style="background:none;border:none;font-size:1.2rem;cursor:pointer;color:#155724;padding:0">×</button>
+    </div>
+  {% elif test == "fail" %}
+    <div style="background:#f8d7da;color:#721c24;border:1px solid #f5c6cb;
+                padding:0.75rem 1rem;border-radius:4px;margin-bottom:1rem;
+                display:flex;justify-content:space-between;align-items:center">
+      <span>✗ Test failed{% if test_msg %}: {{ test_msg }}{% endif %}</span>
+      <button type="button" onclick="this.parentElement.remove()"
+                            style="background:none;border:none;font-size:1.2rem;cursor:pointer;color:#721c24;padding:0">×</button>
+    </div>
+  {% endif %}
 
-<div class="form-card">
+  <div class="form-card">
     <form method="post">
-        <label><span>SMTP Server</span>
-            <input name="smtp_server" value="{{ config.smtp_server | default(value='') }}" required>
-        </label>
-        <label><span>Port</span>
-            <input name="port" type="number" value="{{ config.port | default(value='587') }}" required>
-        </label>
-        <label class="checkbox-label">
-            <input name="tls" type="checkbox" {% if config and config.tls %}checked{% endif %}>
-            <span>Use TLS</span>
-        </label>
-        <label><span>Username</span>
-            <input name="username" value="{{ config.username | default(value='') }}" required>
-        </label>
-        <label><span>Password</span>
-            <input name="password" type="password" placeholder="Leave blank to keep current">
-        </label>
-        <label><span>From Display Name</span>
-            <input name="fromname" value="{{ config.fromname | default(value='') }}" required>
-        </label>
-        <label><span>Test Recipient Email</span>
-            <input name="test_recipient" type="email" value="{{ config.test_recipient | default(value='') }}">
-        </label>
-        <div class="actions">
-            <button type="submit">Save</button>
-        </div>
+      <label><span>SMTP Server</span>
+        <input name="smtp_server" value="{{ config.smtp_server | default(value='') }}" required>
+      </label>
+      <label><span>Port</span>
+        <input name="port" type="number" value="{{ config.port | default(value='587') }}" required>
+      </label>
+      <label class="checkbox-label">
+        <input name="tls" type="checkbox" {% if config and config.tls %}checked{% endif %}>
+        <span>Use TLS</span>
+      </label>
+      <label><span>Username</span>
+        <input name="username" value="{{ config.username | default(value='') }}" required>
+      </label>
+      <label><span>Password</span>
+        <input name="password" type="password" placeholder="Leave blank to keep current">
+      </label>
+      <label><span>From Display Name</span>
+        <input name="fromname" value="{{ config.fromname | default(value='') }}" required>
+      </label>
+      <label><span>Test Recipient Email</span>
+        <input name="test_recipient" type="email" value="{{ config.test_recipient | default(value='') }}">
+      </label>
+      <div class="actions">
+        <button type="submit">Save</button>
+      </div>
     </form>
-</div>
+  </div>
 
-<div style="margin-top:1.5rem">
+  <div style="margin-top:1.5rem">
     <h2 style="margin-bottom:0.75rem">Test Configuration</h2>
     <p style="margin-bottom:0.75rem;color:#555">Sends a test email to the test recipient address above.</p>
     <form method="post" action="/settings/email/test">
-        <button type="submit" class="button button-green">Send Test Email</button>
+      <button type="submit" class="button button-green">Send Test Email</button>
     </form>
-</div>
+  </div>
 {% endblock %}

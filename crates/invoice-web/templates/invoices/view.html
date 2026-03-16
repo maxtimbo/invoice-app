@@ -4,6 +4,23 @@
 
 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem">
     <h1>{{ inv.invoice_stage }} #{{ inv.id }}</h1>
+    {% if sent == "ok" %}
+<div id="flash" style="background:#d4edda;color:#155724;border:1px solid #c3e6cb;
+     padding:0.75rem 1rem;border-radius:4px;margin-bottom:1rem;
+     display:flex;justify-content:space-between;align-items:center">
+  <span>✓ Invoice sent successfully.</span>
+  <button type="button" onclick="this.parentElement.remove()"
+          style="background:none;border:none;font-size:1.2rem;cursor:pointer;color:#155724;padding:0">×</button>
+</div>
+{% elif sent == "fail" %}
+<div id="flash" style="background:#f8d7da;color:#721c24;border:1px solid #f5c6cb;
+     padding:0.75rem 1rem;border-radius:4px;margin-bottom:1rem;
+     display:flex;justify-content:space-between;align-items:center">
+  <span>✗ Failed to send email{% if sent_msg %}: {{ sent_msg }}{% endif %}</span>
+  <button type="button" onclick="this.parentElement.remove()"
+          style="background:none;border:none;font-size:1.2rem;cursor:pointer;color:#721c24;padding:0">×</button>
+</div>
+{% endif %}
     <div class="actions">
         <a class="button" href="/invoices/{{ inv.id }}">Edit</a>
         <form method="post" action="/invoices/{{ inv.id }}/email" style="display:inline">

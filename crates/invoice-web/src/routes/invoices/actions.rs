@@ -177,7 +177,11 @@ pub async fn send_email(State(s): State<S>, Path(id): Path<i64>) -> impl IntoRes
     use chrono::Local;
 
     let invoice = s.db.get_invoice(InvoiceId(id)).await.unwrap().unwrap();
-    let config  = s.db.get_config().await.unwrap().unwrap();
+    let config = match s.db.get_config().await.unwrap() {
+        Some(c) => c,
+        None => return Redirect::to(&format!("/invoices/{id}/view?sent=fail&msg=No+email+configuration+found")),
+    };
+
     let paths   = Paths::init().unwrap();
     let engine  = TemplateEngine::new(&paths.templates).unwrap();
     let html    = engine.render(&invoice).unwrap();
@@ -185,17 +189,27 @@ pub async fn send_email(State(s): State<S>, Path(id): Path<i64>) -> impl IntoRes
     let filename = format!("invoice_{:04}.pdf", id);
 
     match EmailService::send(&config, &invoice, html, pdf, filename).await {
-        Ok(_)  => {
+        Ok(_) => {
             s.db.update_invoice(InvoiceId(id), UpdateInvoice {
                 message_sent: Some(Local::now().date_naive()),
                 ..Default::default()
             }).await.unwrap();
-        },
+            Redirect::to(&format!("/invoices/{id}/view?sent=ok"))
+        }
         Err(e) => {
             eprintln!("Email error: {e}");
+            let msg = urlencoding_simple(&e.to_string());
+            Redirect::to(&format!("/invoices/{id}/view?sent=fail&msg={msg}"))
         }
     }
-    Redirect::to(&format!("/invoices/{id}/view"))
+}
+
+fn urlencoding_simple(s: &str) -> String {
+    s.chars().map(|c| match c {
+        ' ' => '+'.to_string(),
+        c if c.is_alphanumeric() || "-_.~".contains(c) => c.to_string(),
+        c => format!("%{:02X}", c as u32),
+    }).collect()
 }
 
 pub async fn archive(State(s): State<S>, Path(id): Path<i64>) -> impl IntoResponse {
