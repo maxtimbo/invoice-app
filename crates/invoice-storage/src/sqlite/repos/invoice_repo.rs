@@ -46,7 +46,8 @@ impl SqliteStorage {
                 notes,
                 items_json,
                 total,
-                message_sent
+                message_sent,
+                archived
             FROM invoices WHERE id = ?")
             .bind(id.0)
             .fetch_optional(&self.pool)
@@ -101,6 +102,7 @@ impl SqliteStorage {
             notes: r.get("notes"),
             items,
             message_sent,
+            archived: r.get::<bool, _>("archived"),
         })
     }
     async fn hydrate_invoice(&self, skel: InvoiceSkel) -> Result<Invoice> {
@@ -123,6 +125,7 @@ impl SqliteStorage {
             notes: skel.notes,
             items,
             message_sent: skel.message_sent,
+            archived: skel.archived,
         })
     }
     fn compute_total(items: &[(Item, Quantity)]) -> i64 {
@@ -143,7 +146,7 @@ impl InvoiceRepo for SqliteStorage {
         }
     }
 
-    async fn list_invoice_summary(&self) -> Result<Vec<InvoiceSummary>> {
+    async fn list_invoice_summary(&self, show_archived: bool) -> Result<Vec<InvoiceSummary>> {
         let rows = sqlx::query(
             "SELECT
                 i.id,
@@ -153,13 +156,16 @@ impl InvoiceRepo for SqliteStorage {
                 i.status_check,
                 i.total,
                 i.message_sent,
+                i.archived,
                 c.name as client_name,
                 t.due as terms_due
             FROM invoices i
             JOIN templates tmpl ON tmpl.id = i.template_id
             JOIN client c ON c.id = tmpl.client_id
             JOIN terms t on t.id = tmpl.terms_id
+            WHERE (? = 1 OR i.archived = 0)
             ORDER BY i.date DESC")
+            .bind(show_archived as i64)
             .fetch_all(&self.pool)
             .await?;
 
@@ -188,6 +194,7 @@ impl InvoiceRepo for SqliteStorage {
                 status,
                 due: due_date,
                 message_sent,
+                archived: r.get::<bool, _>("archived"),
             });
         }
         Ok(summaries)
@@ -227,9 +234,10 @@ impl InvoiceRepo for SqliteStorage {
                     notes,
                     items_json,
                     total,
-                    message_sent
+                    message_sent,
+                    archived
                 )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULL)")
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULL, 0)")
             .bind(input.template.0)
             .bind(input.date.format("%Y%m%d").to_string())
             .bind(input.attributes.show_methods)
@@ -252,6 +260,7 @@ impl InvoiceRepo for SqliteStorage {
         let mut skel = self.fetch_invoice_skel(id).await?
             .ok_or_else(|| anyhow!("invoice {} not found", id.0))?;
 
+        if let Some(PaidStatus::Paid { .. }) = &patch.status { skel.archived = true; }
         if let Some(v) = patch.show_methods { skel.attributes.show_methods = v; }
         if let Some(v) = patch.show_notes { skel.attributes.show_notes = v; }
         if let Some(v) = patch.stage { skel.attributes.stage = v; }
@@ -259,6 +268,7 @@ impl InvoiceRepo for SqliteStorage {
         if let Some(v) = patch.notes { skel.notes = Some(v); }
         if let Some(v) = patch.template  {skel.template_id = v; }
         if let Some(v) = patch.message_sent { skel.message_sent = Some(v); }
+        if let Some(v) = patch.archived { skel.archived = v; }
 
         if let Some(new_items) = patch.items {
             skel.items = new_items
@@ -300,7 +310,8 @@ impl InvoiceRepo for SqliteStorage {
                 notes = ?,
                 items_json = ?,
                 total = ?,
-                message_sent = ?
+                message_sent = ?,
+                archived = ?
             WHERE id = ?")
             .bind(skel.template_id.0)
             .bind(skel.attributes.show_methods)
@@ -313,6 +324,7 @@ impl InvoiceRepo for SqliteStorage {
             .bind(items_json)
             .bind(total)
             .bind(skel.message_sent.map(|d| d.format("%Y%m%d").to_string()))
+            .bind(skel.archived)
             .bind(id.0)
             .execute(&self.pool)
             .await?;

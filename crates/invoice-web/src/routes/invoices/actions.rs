@@ -197,3 +197,19 @@ pub async fn send_email(State(s): State<S>, Path(id): Path<i64>) -> impl IntoRes
     }
     Redirect::to(&format!("/invoices/{id}/view"))
 }
+
+pub async fn archive(State(s): State<S>, Path(id): Path<i64>) -> impl IntoResponse {
+    s.db.update_invoice(InvoiceId(id), UpdateInvoice {
+        archived: Some(true),
+        ..Default::default()
+    }).await.unwrap();
+    Redirect::to("/invoices")
+}
+
+pub async fn unarchive(State(s): State<S>, Path(id): Path<i64>) -> impl IntoResponse {
+    s.db.update_invoice(InvoiceId(id), UpdateInvoice {
+        archived: Some(false),
+        ..Default::default()
+    }).await.unwrap();
+    Redirect::to("/invoices?archived=1")
+}

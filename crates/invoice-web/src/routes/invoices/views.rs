@@ -1,6 +1,7 @@
 use std::sync::Arc;
+use std::collections::HashMap;
 use axum::{
-    extract::{Path, State},
+    extract::{Path, State, Query},
     response::{Html, IntoResponse, Response},
     body::Body,
     http::{header, StatusCode},
@@ -44,26 +45,32 @@ pub async fn print(State(s): State<S>, Path(id): Path<i64>) -> impl IntoResponse
         .unwrap()
 }
 
-pub async fn list(State(s): State<S>) -> impl IntoResponse {
-    let summaries = s.db.list_invoice_summary().await.unwrap();
+pub async fn list(
+    State(s): State<S>,
+    Query(params): Query<HashMap<String, String>>,
+) -> impl IntoResponse {
+    let show_archived = params.get("archived").map(|v| v == "1").unwrap_or(false);
+    let summaries = s.db.list_invoice_summary(show_archived).await.unwrap();
     let views: Vec<InvoiceSummaryView> = summaries.into_iter().map(|s| {
         let (status, status_date, _) = flatten_status(&s.status);
         let status_str = match status_date {
             Some(d) => format!("{status} ({d})"),
-            None => status.to_string(),
+            None    => status.to_string(),
         };
         InvoiceSummaryView {
-            id: s.id.0,
-            client_name: s.client_name,
-            issued: s.issued.format("%Y-%m-%d").to_string(),
-            due: s.due.format("%Y-%m-%d").to_string(),
-            status: status_str,
-            total: format!("{:.2}", s.total.inner()),
+            id:           s.id.0,
+            client_name:  s.client_name,
+            issued:       s.issued.format("%Y-%m-%d").to_string(),
+            due:          s.due.format("%Y-%m-%d").to_string(),
+            status:       status_str,
+            total:        format!("{:.2}", s.total.inner()),
             message_sent: s.message_sent.map(|d| d.format("%Y-%m-%d").to_string()).unwrap_or_default(),
+            archived:     s.archived,
         }
     }).collect();
     let mut ctx = Context::new();
     ctx.insert("invoices", &views);
+    ctx.insert("show_archived", &show_archived);
     Html(s.tera.render("invoices/list.html", &ctx).unwrap())
 }
 

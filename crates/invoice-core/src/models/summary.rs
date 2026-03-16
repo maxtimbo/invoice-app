@@ -14,4 +14,5 @@ pub struct InvoiceSummary {
     pub status: PaidStatus,
     pub total: Currency,
     pub message_sent: Option<NaiveDate>,
+    pub archived: bool,
 }

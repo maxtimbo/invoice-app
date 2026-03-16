@@ -83,7 +83,7 @@ pub async fn interactive(db: &SqliteStorage) -> Result<()> {
 }
 
 async fn list(db: &SqliteStorage) -> Result<()> {
-    let all = db.list_invoice_summary().await?;
+    let all = db.list_invoice_summary(false).await?;
     if all.is_empty() {
         println!("No invoices found.");
         return Ok(());

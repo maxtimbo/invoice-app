@@ -15,6 +15,7 @@ pub struct InvoiceSummaryView {
     pub status: String,
     pub total: String,
     pub message_sent: String,
+    pub archived: bool,
 }
 
 #[derive(Serialize)]

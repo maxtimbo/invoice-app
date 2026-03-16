@@ -23,6 +23,7 @@ async fn main() -> Result<()> {
 
     let app = Router::new()
         .route("/",                                     get(root))
+
         .route("/items",                                get(routes::items::list))
         .route("/items/new",                            get(routes::items::new_form).post(routes::items::create))
         .route("/items/{id}",                           get(routes::items::edit_form).post(routes::items::update))
@@ -62,6 +63,8 @@ async fn main() -> Result<()> {
         .route("/invoices/{id}/items/add",              axum::routing::post(routes::invoices::add_item))
         .route("/invoices/{id}/items/{item_id}/remove", axum::routing::post(routes::invoices::remove_item))
         .route("/invoices/{id}/email",                  axum::routing::post(routes::invoices::send_email))
+        .route("/invoices/{id}/archive",                axum::routing::post(routes::invoices::archive))
+        .route("/invoices/{id}/unarchive",              axum::routing::post(routes::invoices::unarchive))
 
         .route("/settings/email",                       get(routes::settings::email_form).post(routes::settings::save_email_config))
         .route("/settings/email/test",                  axum::routing::post(routes::settings::test_email_config))

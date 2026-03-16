@@ -22,6 +22,7 @@ pub struct Invoice {
     pub notes: Option<String>,
     pub items: HashMap<Item, Quantity>,
     pub message_sent: Option<NaiveDate>,
+    pub archived: bool,
 }
 
 impl Invoice {

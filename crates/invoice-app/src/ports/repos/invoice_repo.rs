@@ -29,12 +29,13 @@ pub struct UpdateInvoice {
     pub template: Option<TemplateId>,
     pub items: Option<Vec<(ItemId, Quantity)>>,
     pub message_sent: Option<NaiveDate>,
+    pub archived: Option<bool>,
 }
 
 #[async_trait]
 pub trait InvoiceRepo: Send + Sync {
     async fn get_invoice(&self, id: InvoiceId) -> Result<Option<Invoice>>;
-    async fn list_invoice_summary(&self) -> Result<Vec<InvoiceSummary>>;
+    async fn list_invoice_summary(&self, show_archived: bool) -> Result<Vec<InvoiceSummary>>;
     async fn create_invoice(&self, input: CreateInvoice) -> Result<InvoiceId>;
     async fn update_invoice(&self, id: InvoiceId, patch: UpdateInvoice) -> Result<()>;
     async fn delete_invoice(&self, id: InvoiceId) -> Result<bool>;

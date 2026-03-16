@@ -3,43 +3,51 @@
 {% block content %}
 <h1>Invoices</h1>
 <div class="actions">
-    <a class="button" href="/invoices/new">New Invoice</a>
+  <a class="button" href="/invoices/new">New Invoice</a>
+  {% if show_archived %}
+    <a class="button button-muted" href="/invoices">Hide Archived</a>
+  {% else %}
+    <a class="button button-muted" href="/invoices?archived=1">Show Archived</a>
+  {% endif %}
 </div>
 <table>
-    <thead>
-        <tr>
-            <th>#</th>
-            <th>Client</th>
-            <th>Issued</th>
-            <th>Due</th>
-            <th>Status</th>
-            <th>Total</th>
-            <th>Last Sent</th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for inv in invoices %}
-        <tr>
-            <td>{{ inv.id }}</td>
-            <td>{{ inv.client_name }}</td>
-            <td>{{ inv.issued }}</td>
-            <td>{{ inv.due }}</td>
-            <td>{{ inv.status }}</td>
-            <td>${{ inv.total }}</td>
-            <td>{% if inv.message_sent %}{{ inv.message_sent }}{% else %}-{% endif %}</td>
-            <td>
-                <div class="td-actions">
-                    <a class="button button-green" href="/invoices/{{ inv.id }}/view">View</a>
-                    <a class="button button-purple" href="/invoices/{{ inv.id }}/print" target="_blank">Print</a>
-                    <a class="button" href="/invoices/{{ inv.id }}">Edit</a>
-                    <form method="post" action="/invoices/{{ inv.id }}/delete">
-                        <button class="danger" type="submit">Delete</button>
-                    </form>
-                </div>
-            </td>
-        </tr>
-        {% endfor %}
-    </tbody>
+  <thead>
+    <tr>
+      <th>#</th><th>Client</th><th>Issued</th><th>Due</th>
+      <th>Status</th><th>Total</th><th>Last Sent</th><th></th>
+    </tr>
+  </thead>
+  <tbody>
+  {% for inv in invoices %}
+    <tr {% if inv.archived %}style="opacity:0.55"{% endif %}>
+      <td>{{ inv.id }}</td>
+      <td>{{ inv.client_name }}</td>
+      <td>{{ inv.issued }}</td>
+      <td>{{ inv.due }}</td>
+      <td>{{ inv.status }}</td>
+      <td>${{ inv.total }}</td>
+      <td>{% if inv.message_sent %}{{ inv.message_sent }}{% else %}—{% endif %}</td>
+      <td>
+        <div class="td-actions">
+          <a class="button button-green" href="/invoices/{{ inv.id }}/view">View</a>
+          <a class="button button-purple" href="/invoices/{{ inv.id }}/print" target="_blank">Print</a>
+          <a class="button" href="/invoices/{{ inv.id }}">Edit</a>
+          {% if inv.archived %}
+            <form method="post" action="/invoices/{{ inv.id }}/unarchive">
+              <button type="submit">Unarchive</button>
+            </form>
+          {% else %}
+            <form method="post" action="/invoices/{{ inv.id }}/archive">
+              <button class="button-muted" type="submit">Archive</button>
+            </form>
+          {% endif %}
+          <form method="post" action="/invoices/{{ inv.id }}/delete">
+            <button class="danger" type="submit">Delete</button>
+          </form>
+        </div>
+      </td>
+    </tr>
+  {% endfor %}
+  </tbody>
 </table>
 {% endblock %}
