@@ -5,7 +5,7 @@
 {% block content %}
 <h1>{% if method %}Edit Payment Method{% else %}New Payment Method{% endif %}</h1>
 <div class="form-card">
-    <form method="post">
+    <form method="post" enctype="multipart/form-data">
         <label>
             <span>Name</span>
             <input name="name" value="{{ method.name | default(value='') }}">
@@ -14,11 +14,12 @@
             <span>Link</span>
             <input name="link" value="{{ method.link | default(value='') }}">
         </label>
-        <label><span>QR Code</span>
+        <label>
+            <span>QR Code</span>
             <input name="qr" type="file" accept="image/png,image/jpeg,image/webp">
         </label>
         {% if method.qr %}
-        <img src="{{ method.qr }}" style="height:64px;margin-bottom:1rem;display:block">
+        <img src="{{ method.qr }}" class="preview-image">
         {% endif %}
         <div class="actions">
             <button type="submit">Save</button>

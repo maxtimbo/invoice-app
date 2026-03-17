@@ -2,10 +2,11 @@
 {% block title %}New Invoice{% endblock %}
 {% block content %}
 <h1>New Invoice</h1>
-<div class="form-card" style="max-width:640px">
+<div class="form-card form-card-wide">
     <form method="post" id="invoice-form">
 
-        <label><span>Template</span>
+        <label>
+            <span>Template</span>
             <select name="template_id" required>
                 {% for t in templates %}
                 <option value="{{ t.id }}">{{ t.name }}</option>
@@ -13,11 +14,13 @@
             </select>
         </label>
 
-        <label><span>Date</span>
+        <label>
+            <span>Date</span>
             <input name="date" type="date" required>
         </label>
 
-        <label><span>Stage</span>
+        <label>
+            <span>Stage</span>
             <select name="stage">
                 <option value="Invoice">Invoice</option>
                 <option value="Quote">Quote</option>
@@ -34,54 +37,55 @@
             <span>Show notes</span>
         </label>
 
-        <label><span>Notes</span>
+        <label>
+            <span>Notes</span>
             <textarea name="notes" rows="3"></textarea>
         </label>
 
-        <h3 style="margin-bottom:0.75rem">Items</h3>
+        <h3 class="section-title">Items</h3>
 
-        <table id="selected-items-table" style="margin-bottom:1rem">
+        <table class="mb-1">
             <thead>
                 <tr><th>Name</th><th>Rate</th><th>Qty</th><th></th></tr>
             </thead>
             <tbody id="selected-items-body">
-                <tr id="no-items-row"><td colspan="4" style="color:#888;font-style:italic">No items added yet</td></tr>
+                <tr id="no-items-row"><td colspan="4" class="hint">No items added yet</td></tr>
             </tbody>
         </table>
 
-        <details style="margin-bottom:1.5rem">
-            <summary style="cursor:pointer;font-weight:500;margin-bottom:0.75rem">+ Add Item</summary>
-            <div style="display:flex;gap:0.75rem;align-items:flex-end;flex-wrap:wrap;margin-top:0.75rem">
-                <label style="flex:1;min-width:160px"><span>Item</span>
+        <details class="mb-1">
+            <summary class="section-title">+ Add Item</summary>
+            <div class="inline-form">
+                <label class="field-grow">
+                    <span>Item</span>
                     <select id="item-select">
                         {% for item in items %}
                         <option value="{{ item.id }}" data-name="{{ item.name }}" data-rate="{{ item.rate }}">
-                        {{ item.name }} (${{ item.rate }})
+                            {{ item.name }} (${{ item.rate }})
                         </option>
                         {% endfor %}
                     </select>
                 </label>
-                <label style="width:100px"><span>Quantity</span>
+                <label class="field-fixed">
+                    <span>Quantity</span>
                     <input id="item-qty" type="number" min="0.001" step="0.001" value="1">
                 </label>
-                <button type="button" onclick="addItem()" style="margin-bottom:1rem">Add</button>
+                <button type="button" onclick="addItem()">Add</button>
             </div>
         </details>
-        <button type="button" class="button button-muted" onclick="document.getElementById('quick-item-modal').style.display='flex'" style="margin-bottom:1.5rem">
+
+        <button type="button" class="button button-muted mb-1"
+                onclick="document.getElementById('quick-item-modal').classList.add('open')">
             + New Item
         </button>
 
-        <div id="quick-item-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:100;align-items:center;justify-content:center">
-            <div style="background:white;padding:1.5rem;border-radius:6px;width:320px;box-shadow:0 4px 24px rgba(0,0,0,0.2)">
-                <h3 style="margin-bottom:1rem">New Item</h3>
-                <label style="margin-bottom:0.75rem;display:block"><span style="font-weight:500;font-size:.9rem;display:block;margin-bottom:.25rem">Name</span>
-                    <input id="qi-name" style="width:100%;padding:.4rem .6rem;border:1px solid #ccc;border-radius:4px">
-                </label>
-                <label style="margin-bottom:1rem;display:block"><span style="font-weight:500;font-size:.9rem;display:block;margin-bottom:.25rem">Rate</span>
-                    <input id="qi-rate" type="number" min="0" step="0.01" style="width:100%;padding:.4rem .6rem;border:1px solid #ccc;border-radius:4px">
-                </label>
-                <div id="qi-error" style="color:#cc4444;margin-bottom:.75rem;display:none"></div>
-                <div style="display:flex;gap:.5rem">
+        <div id="quick-item-modal" class="modal-overlay">
+            <div class="modal-card">
+                <h3>New Item</h3>
+                <label><span>Name</span><input id="qi-name"></label>
+                <label><span>Rate</span><input id="qi-rate" type="number" min="0" step="0.01"></label>
+                <div id="qi-error" class="modal-error"></div>
+                <div class="actions mb-0">
                     <button type="button" onclick="quickCreateItem()">Create</button>
                     <button type="button" class="button button-muted" onclick="closeQuickItem()">Cancel</button>
                 </div>
@@ -101,10 +105,12 @@
     const selected = {}; // id -> { name, rate, qty }
 
     function closeQuickItem() {
-        document.getElementById('quick-item-modal').style.display = 'none';
+        document.getElementById('quick-item-modal').classList.remove('open');
         document.getElementById('qi-name').value = '';
         document.getElementById('qi-rate').value = '';
-        document.getElementById('qi-error').style.display = 'none';
+        const err = document.getElementById('qi-error');
+        err.style.display = 'none';
+        err.textContent = '';
     }
 
     async function quickCreateItem() {
@@ -127,16 +133,15 @@
             return;
         }
 
-        // The server redirects to /items — grab the new item from the list
-        const listRes  = await fetch('/items');
-        const html     = await listRes.text();
-        const doc      = new DOMParser().parseFromString(html, 'text/html');
-        const rows     = doc.querySelectorAll('tbody tr');
-        const lastRow  = rows[rows.length - 1];
-        const newName  = lastRow?.querySelector('td a')?.textContent?.trim();
-        const newRate  = lastRow?.querySelector('td:nth-child(2)')?.textContent?.trim();
-        const newHref  = lastRow?.querySelector('td a')?.getAttribute('href') ?? '';
-        const newId    = newHref.split('/').pop();
+        const listRes = await fetch('/items');
+        const html    = await listRes.text();
+        const doc     = new DOMParser().parseFromString(html, 'text/html');
+        const rows    = doc.querySelectorAll('tbody tr');
+        const lastRow = rows[rows.length - 1];
+        const newName = lastRow?.querySelector('td a')?.textContent?.trim();
+        const newRate = lastRow?.querySelector('td:nth-child(2)')?.textContent?.trim();
+        const newHref = lastRow?.querySelector('td a')?.getAttribute('href') ?? '';
+        const newId   = newHref.split('/').pop();
 
         if (!newId || !newName) {
             err.textContent = 'Item created but could not refresh list.';
@@ -144,14 +149,13 @@
             return;
         }
 
-        // Add to the select dropdown
         const sel = document.getElementById('item-select');
         const opt = document.createElement('option');
-        opt.value           = newId;
-        opt.dataset.name    = newName;
-        opt.dataset.rate    = newRate;
-        opt.textContent     = `${newName} ($${newRate})`;
-        opt.selected        = true;
+        opt.value        = newId;
+        opt.dataset.name = newName;
+        opt.dataset.rate = newRate;
+        opt.textContent  = `${newName} ($${newRate})`;
+        opt.selected     = true;
         sel.appendChild(opt);
 
         closeQuickItem();
@@ -162,13 +166,9 @@
         const qty = parseFloat(document.getElementById('item-qty').value);
         if (!sel.value || isNaN(qty) || qty <= 0) return;
 
-        const id = sel.value;
+        const id  = sel.value;
         const opt = sel.options[sel.selectedIndex];
-        selected[id] = {
-            name: opt.dataset.name,
-            rate: opt.dataset.rate,
-            qty: qty,
-        };
+        selected[id] = { name: opt.dataset.name, rate: opt.dataset.rate, qty };
         renderTable();
     }
 
@@ -178,51 +178,50 @@
     }
 
     function renderTable() {
-        const tbody = document.getElementById('selected-items-body');
+        const tbody  = document.getElementById('selected-items-body');
         const hidden = document.getElementById('items-hidden');
 
-        tbody.innerHTML = '';
+        tbody.innerHTML  = '';
         hidden.innerHTML = '';
 
         const ids = Object.keys(selected);
         if (ids.length === 0) {
-            tbody.innerHTML = '<tr id="no-items-row"><td colspan="5" style="color:#888;font-style:italic">No items added yet</td></tr>';
+            tbody.innerHTML = '<tr id="no-items-row"><td colspan="4" class="hint">No items added yet</td></tr>';
             return;
         }
 
         for (const id of ids) {
             const item = selected[id];
-            const tr = document.createElement('tr');
+            const tr   = document.createElement('tr');
             tr.id = `row-${id}`;
             tr.innerHTML = `
-      <td>${item.name}</td>
-      <td>$${item.rate}</td>
-      <td id="qty-display-${id}">${item.qty}</td>
-      <td>
-        <div class="td-actions">
-          <button type="button" onclick="editQty('${id}')">Edit Qty</button>
-          <button type="button" class="danger" onclick="removeItem('${id}')">Remove</button>
-        </div>
-      </td>`;
+                <td>${item.name}</td>
+                <td>$${item.rate}</td>
+                <td id="qty-display-${id}">${item.qty}</td>
+                <td>
+                    <div class="td-actions">
+                        <button type="button" onclick="editQty('${id}')">Edit Qty</button>
+                        <button type="button" class="danger" onclick="removeItem('${id}')">Remove</button>
+                    </div>
+                </td>`;
             tbody.appendChild(tr);
 
-            const inp = document.createElement('input');
-            inp.type  = 'hidden';
-            inp.name  = `qty_${id}`;
-            inp.value = item.qty;
+            const inp   = document.createElement('input');
+            inp.type    = 'hidden';
+            inp.name    = `qty_${id}`;
+            inp.value   = item.qty;
             hidden.appendChild(inp);
         }
     }
 
     function editQty(id) {
-        const cell = document.getElementById(`qty-display-${id}`);
+        const cell    = document.getElementById(`qty-display-${id}`);
         const current = selected[id].qty;
         cell.innerHTML = `
-    <div style="display:flex;gap:.4rem;align-items:center">
-      <input id="qty-edit-${id}" type="number" min="0.001" step="0.001"
-             value="${current}" style="width:80px;padding:.3rem .4rem">
-      <button type="button" onclick="saveQty('${id}')">✓</button>
-    </div>`;
+            <div class="qty-edit-form">
+                <input id="qty-edit-${id}" type="number" min="0.001" step="0.001" value="${current}">
+                <button type="button" onclick="saveQty('${id}')">✓</button>
+            </div>`;
         document.getElementById(`qty-edit-${id}`).focus();
     }
 

@@ -3,16 +3,16 @@
 {% block content %}
 <h1>Invoice #{{ invoice.id }}</h1>
 
-<div class="form-card" style="max-width:640px">
-    <table style="margin-bottom:1.5rem">
+<div class="form-card form-card-wide">
+    <table class="info-table">
         <tr><td><strong>Company</strong></td><td>{{ invoice.company_name }}</td></tr>
         <tr><td><strong>Client</strong></td><td>{{ invoice.client_name }}</td></tr>
         <tr><td><strong>Date</strong></td><td>{{ invoice.date }}</td></tr>
         <tr><td><strong>Total</strong></td><td>${{ invoice.total }}</td></tr>
     </table>
 
-    <h3 style="margin-bottom:0.75rem">Items</h3>
-    <table style="margin-bottom:1rem">
+    <h3 class="section-title">Items</h3>
+    <table class="mb-1">
         <thead>
             <tr><th>Name</th><th>Rate</th><th>Qty</th><th>Subtotal</th><th></th></tr>
         </thead>
@@ -34,18 +34,18 @@
             </tr>
             {% endfor %}
             <tr>
-                <td colspan="3" style="text-align:right"><strong>Total</strong></td>
+                <td colspan="3" class="text-right"><strong>Total</strong></td>
                 <td><strong>${{ invoice.total }}</strong></td>
                 <td></td>
             </tr>
         </tbody>
     </table>
 
-    <details style="margin-bottom:1.5rem">
-        <summary style="cursor:pointer;font-weight:500;margin-bottom:0.75rem">Add Item</summary>
-        <form method="post" action="/invoices/{{ invoice.id }}/items/add"
-                            style="display:flex;gap:0.75rem;align-items:flex-end;flex-wrap:wrap;margin-top:0.75rem">
-            <label style="flex:1;min-width:160px"><span>Item</span>
+    <details class="mb-1">
+        <summary class="section-title">Add Item</summary>
+        <form method="post" action="/invoices/{{ invoice.id }}/items/add" class="inline-form">
+            <label class="field-grow">
+                <span>Item</span>
                 <select name="item_id">
                     {% for item in all_items %}
                     {% if item.id not in current_item_ids %}
@@ -54,43 +54,42 @@
                     {% endfor %}
                 </select>
             </label>
-            <label style="width:100px"><span>Quantity</span>
+            <label class="field-fixed">
+                <span>Quantity</span>
                 <input name="quantity" type="number" min="0.001" step="0.001" value="1">
             </label>
-            <button type="submit" style="margin-bottom:1rem">Add</button>
+            <button type="submit">Add</button>
         </form>
     </details>
-    <button type="button" class="button button-muted" onclick="document.getElementById('quick-item-modal').style.display='flex'" style="margin-bottom:1.5rem">
+
+    <button type="button" class="button button-muted mb-1" onclick="document.getElementById('quick-item-modal').classList.add('open')">
         + New Item
     </button>
 
-    <div id="quick-item-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:100;align-items:center;justify-content:center">
-        <div style="background:white;padding:1.5rem;border-radius:6px;width:320px;box-shadow:0 4px 24px rgba(0,0,0,0.2)">
-            <h3 style="margin-bottom:1rem">New Item</h3>
-            <label style="margin-bottom:0.75rem;display:block"><span style="font-weight:500;font-size:.9rem;display:block;margin-bottom:.25rem">Name</span>
-                <input id="qi-name" style="width:100%;padding:.4rem .6rem;border:1px solid #ccc;border-radius:4px">
-            </label>
-            <label style="margin-bottom:1rem;display:block"><span style="font-weight:500;font-size:.9rem;display:block;margin-bottom:.25rem">Rate</span>
-                <input id="qi-rate" type="number" min="0" step="0.01" style="width:100%;padding:.4rem .6rem;border:1px solid #ccc;border-radius:4px">
-            </label>
-            <div id="qi-error" style="color:#cc4444;margin-bottom:.75rem;display:none"></div>
-            <div style="display:flex;gap:.5rem">
+    <div id="quick-item-modal" class="modal-overlay">
+        <div class="modal-card">
+            <h3>New Item</h3>
+            <label><span>Name</span><input id="qi-name"></label>
+            <label><span>Rate</span><input id="qi-rate" type="number" min="0" step="0.01"></label>
+            <div id="qi-error" class="modal-error"></div>
+            <div class="actions mb-0">
                 <button type="button" onclick="quickCreateItem()">Create</button>
                 <button type="button" class="button button-muted" onclick="closeQuickItem()">Cancel</button>
             </div>
         </div>
     </div>
 
-
     <form method="post">
-        <label><span>Stage</span>
+        <label>
+            <span>Stage</span>
             <select name="stage">
                 <option value="Invoice" {% if invoice.stage == "Invoice" %}selected{% endif %}>Invoice</option>
                 <option value="Quote"   {% if invoice.stage == "Quote" %}selected{% endif %}>Quote</option>
             </select>
         </label>
 
-        <label><span>Status</span>
+        <label>
+            <span>Status</span>
             <select name="status" id="status-select">
                 <option value="Waiting"  {% if invoice.status == "Waiting" %}selected{% endif %}>Waiting</option>
                 <option value="PastDue"  {% if invoice.status == "PastDue" %}selected{% endif %}>Past Due</option>
@@ -101,13 +100,15 @@
         </label>
 
         <div id="status-date-field">
-            <label><span>Status Date</span>
+            <label>
+                <span>Status Date</span>
                 <input name="status_date" type="date" value="{{ invoice.status_date | default(value='') }}">
             </label>
         </div>
 
         <div id="status-check-field">
-            <label><span>Check Number</span>
+            <label>
+                <span>Check Number</span>
                 <input name="status_check" value="{{ invoice.status_check | default(value='') }}">
             </label>
         </div>
@@ -122,7 +123,8 @@
             <span>Show notes</span>
         </label>
 
-        <label><span>Notes</span>
+        <label>
+            <span>Notes</span>
             <textarea name="notes" rows="3">{{ invoice.notes | default(value='') }}</textarea>
         </label>
 
@@ -141,21 +143,21 @@
     function editQty(id, current) {
         const cell = document.getElementById(`qty-display-${id}`);
         cell.innerHTML = `
-    <form method="post" action="/invoices/{{ invoice.id }}/items/add"
-          style="display:flex;gap:.4rem;align-items:center">
-      <input type="hidden" name="item_id" value="${id}">
-      <input name="quantity" type="number" min="0.001" step="0.001"
-             value="${current}" style="width:80px;padding:.3rem .4rem">
-      <button type="submit">✓</button>
-    </form>`;
+            <form method="post" action="/invoices/{{ invoice.id }}/items/add" class="qty-edit-form">
+                <input type="hidden" name="item_id" value="${id}">
+                <input name="quantity" type="number" min="0.001" step="0.001" value="${current}">
+                <button type="submit">✓</button>
+            </form>`;
         cell.querySelector('input[name=quantity]').focus();
     }
 
     function closeQuickItem() {
-        document.getElementById('quick-item-modal').style.display = 'none';
+        document.getElementById('quick-item-modal').classList.remove('open');
         document.getElementById('qi-name').value = '';
         document.getElementById('qi-rate').value = '';
-        document.getElementById('qi-error').style.display = 'none';
+        const err = document.getElementById('qi-error');
+        err.style.display = 'none';
+        err.textContent = '';
     }
 
     async function quickCreateItem() {
@@ -178,16 +180,15 @@
             return;
         }
 
-        // The server redirects to /items — grab the new item from the list
-        const listRes  = await fetch('/items');
-        const html     = await listRes.text();
-        const doc      = new DOMParser().parseFromString(html, 'text/html');
-        const rows     = doc.querySelectorAll('tbody tr');
-        const lastRow  = rows[rows.length - 1];
-        const newName  = lastRow?.querySelector('td a')?.textContent?.trim();
-        const newRate  = lastRow?.querySelector('td:nth-child(2)')?.textContent?.trim();
-        const newHref  = lastRow?.querySelector('td a')?.getAttribute('href') ?? '';
-        const newId    = newHref.split('/').pop();
+        const listRes = await fetch('/items');
+        const html    = await listRes.text();
+        const doc     = new DOMParser().parseFromString(html, 'text/html');
+        const rows    = doc.querySelectorAll('tbody tr');
+        const lastRow = rows[rows.length - 1];
+        const newName = lastRow?.querySelector('td a')?.textContent?.trim();
+        const newRate = lastRow?.querySelector('td:nth-child(2)')?.textContent?.trim();
+        const newHref = lastRow?.querySelector('td a')?.getAttribute('href') ?? '';
+        const newId   = newHref.split('/').pop();
 
         if (!newId || !newName) {
             err.textContent = 'Item created but could not refresh list.';
@@ -195,14 +196,13 @@
             return;
         }
 
-        // Add to the select dropdown
         const sel = document.getElementById('item-select');
         const opt = document.createElement('option');
-        opt.value           = newId;
-        opt.dataset.name    = newName;
-        opt.dataset.rate    = newRate;
-        opt.textContent     = `${newName} ($${newRate})`;
-        opt.selected        = true;
+        opt.value        = newId;
+        opt.dataset.name = newName;
+        opt.dataset.rate = newRate;
+        opt.textContent  = `${newName} ($${newRate})`;
+        opt.selected     = true;
         sel.appendChild(opt);
 
         closeQuickItem();

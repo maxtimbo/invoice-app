@@ -2,40 +2,34 @@
 {% block title %}Invoice #{{ inv.id }}{% endblock %}
 {% block content %}
 
-<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem">
+<div class="page-header">
     <h1>{{ inv.invoice_stage }} #{{ inv.id }}</h1>
-    {% if sent == "ok" %}
-<div id="flash" style="background:#d4edda;color:#155724;border:1px solid #c3e6cb;
-     padding:0.75rem 1rem;border-radius:4px;margin-bottom:1rem;
-     display:flex;justify-content:space-between;align-items:center">
-  <span>✓ Invoice sent successfully.</span>
-  <button type="button" onclick="this.parentElement.remove()"
-          style="background:none;border:none;font-size:1.2rem;cursor:pointer;color:#155724;padding:0">×</button>
-</div>
-{% elif sent == "fail" %}
-<div id="flash" style="background:#f8d7da;color:#721c24;border:1px solid #f5c6cb;
-     padding:0.75rem 1rem;border-radius:4px;margin-bottom:1rem;
-     display:flex;justify-content:space-between;align-items:center">
-  <span>✗ Failed to send email{% if sent_msg %}: {{ sent_msg }}{% endif %}</span>
-  <button type="button" onclick="this.parentElement.remove()"
-          style="background:none;border:none;font-size:1.2rem;cursor:pointer;color:#721c24;padding:0">×</button>
-</div>
-{% endif %}
-    <div class="actions">
+    <div class="actions mb-0">
         <a class="button" href="/invoices/{{ inv.id }}">Edit</a>
-        <form method="post" action="/invoices/{{ inv.id }}/email" style="display:inline">
+        <form method="post" action="/invoices/{{ inv.id }}/email">
             <button type="submit" class="button button-green">Send Email</button>
         </form>
         <a class="button button-purple" href="/invoices/{{ inv.id }}/print" target="_blank">Download PDF</a>
     </div>
 </div>
 
-<div style="display:grid;grid-template-columns:1fr 1fr;gap:2rem;margin-bottom:2rem">
+{% if sent == "ok" %}
+<div class="flash flash-success">
+    <span>✓ Invoice sent successfully.</span>
+    <button type="button" class="flash-dismiss" onclick="this.parentElement.remove()">×</button>
+</div>
+{% elif sent == "fail" %}
+<div class="flash flash-error">
+    <span>✗ Failed to send email{% if sent_msg %}: {{ sent_msg }}{% endif %}</span>
+    <button type="button" class="flash-dismiss" onclick="this.parentElement.remove()">×</button>
+</div>
+{% endif %}
 
+<div class="info-grid">
     <div>
         <h3>{{ inv.template.company.name }}</h3>
         {% if inv.template.company.logo %}
-        <img src="{{ inv.template.company.logo }}" style="max-height:80px;margin-bottom:0.5rem;display:block">
+        <img src="{{ inv.template.company.logo }}" class="preview-image">
         {% endif %}
         {% if inv.template.company.contact.phone %}<div>{{ inv.template.company.contact.phone }}</div>{% endif %}
         {% if inv.template.company.contact.email %}<div>{{ inv.template.company.contact.email }}</div>{% endif %}
@@ -61,11 +55,10 @@
         </div>
         {% endif %}
     </div>
-
 </div>
 
-<div style="display:grid;grid-template-columns:1fr 1fr;gap:2rem;margin-bottom:2rem">
-    <table>
+<div class="info-grid">
+    <table class="meta-table">
         <tr><td><strong>Date</strong></td><td>{{ inv.date }}</td></tr>
         <tr><td><strong>Due Date</strong></td><td>{{ inv.due_date }}</td></tr>
         <tr><td><strong>Terms</strong></td><td>{{ inv.template.terms.name }}</td></tr>
@@ -78,42 +71,42 @@
     </table>
 </div>
 
-<table style="margin-bottom:2rem">
+<table class="mb-2">
     <thead>
         <tr>
             <th>Item</th>
-            <th style="text-align:right">Qty</th>
-            <th style="text-align:right">Rate</th>
-            <th style="text-align:right">Subtotal</th>
+            <th class="text-right">Qty</th>
+            <th class="text-right">Rate</th>
+            <th class="text-right">Subtotal</th>
         </tr>
     </thead>
     <tbody>
         {% for item in inv.items %}
         <tr>
             <td>{{ item.name }}</td>
-            <td style="text-align:right">{{ item.quantity }}</td>
-            <td style="text-align:right">${{ item.rate }}</td>
-            <td style="text-align:right">${{ item.subtotal }}</td>
+            <td class="text-right">{{ item.quantity }}</td>
+            <td class="text-right">${{ item.rate }}</td>
+            <td class="text-right">${{ item.subtotal }}</td>
         </tr>
         {% endfor %}
     </tbody>
     <tfoot>
         <tr>
-            <td colspan="3" style="text-align:right"><strong>Total</strong></td>
-            <td style="text-align:right"><strong>${{ inv.total }}</strong></td>
+            <td colspan="3" class="text-right"><strong>Total</strong></td>
+            <td class="text-right"><strong>${{ inv.total }}</strong></td>
         </tr>
     </tfoot>
 </table>
 
 {% if inv.show_methods and inv.template.methods %}
-<div style="margin-bottom:2rem">
-    <h3>Payment Methods</h3>
-    <div style="display:flex;gap:2rem;flex-wrap:wrap">
+<div class="mb-2">
+    <h3 class="section-title">Payment Methods</h3>
+    <div class="inline-form">
         {% for method in inv.template.methods %}
         <div>
             <div><strong>{{ method.name }}</strong></div>
             {% if method.link %}<div><a href="{{ method.link }}">{{ method.link }}</a></div>{% endif %}
-            {% if method.qr %}<img src="{{ method.qr }}" style="max-width:120px;margin-top:0.5rem">{% endif %}
+            {% if method.qr %}<img src="{{ method.qr }}" class="preview-image">{% endif %}
         </div>
         {% endfor %}
     </div>
@@ -122,7 +115,7 @@
 
 {% if inv.show_notes and inv.notes %}
 <div>
-    <h3>Notes</h3>
+    <h3 class="section-title">Notes</h3>
     <p>{{ inv.notes }}</p>
 </div>
 {% endif %}
