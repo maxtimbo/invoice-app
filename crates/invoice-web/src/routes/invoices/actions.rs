@@ -173,8 +173,7 @@ pub async fn remove_item(
 pub async fn send_email(State(s): State<S>, Path(id): Path<i64>) -> impl IntoResponse {
     use invoice_app::render::TemplateEngine;
     use invoice_app::services::email_service::EmailService;
-    use invoice_app::commands::paths::Paths;
-    use chrono::Local;
+        use chrono::Local;
 
     let invoice = s.db.get_invoice(InvoiceId(id)).await.unwrap().unwrap();
     let config = match s.db.get_config().await.unwrap() {
@@ -182,8 +181,7 @@ pub async fn send_email(State(s): State<S>, Path(id): Path<i64>) -> impl IntoRes
         None => return Redirect::to(&format!("/invoices/{id}/view?sent=fail&msg=No+email+configuration+found")),
     };
 
-    let paths   = Paths::init().unwrap();
-    let engine  = TemplateEngine::new(&paths.templates).unwrap();
+    let engine  = TemplateEngine::new(&s.paths.templates).unwrap();
     let html    = engine.render(&invoice).unwrap();
     let pdf     = engine.to_pdf(&html).unwrap();
     let filename = format!("invoice_{:04}.pdf", id);

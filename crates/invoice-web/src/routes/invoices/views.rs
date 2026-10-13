@@ -12,7 +12,6 @@ use invoice_app::ports::repos::template_repo::TemplateRepo;
 use invoice_app::ports::repos::item_repo::ItemRepo;
 use invoice_app::render::TemplateEngine;
 use invoice_app::render::view::InvoiceView;
-use invoice_app::commands::paths::Paths;
 use invoice_core::models::ids::InvoiceId;
 use invoice_core::models::status::PaidStatus;
 use invoice_core::models::stage::InvoiceStage;
@@ -37,8 +36,7 @@ pub async fn view(
 
 pub async fn print(State(s): State<S>, Path(id): Path<i64>) -> impl IntoResponse {
     let invoice = s.db.get_invoice(InvoiceId(id)).await.unwrap().unwrap();
-    let paths = Paths::init().unwrap();
-    let engine = TemplateEngine::new(&paths.templates).unwrap();
+    let engine = TemplateEngine::new(&s.paths.templates).unwrap();
     let html = engine.render(&invoice).unwrap();
     let pdf = engine.to_pdf(&html).unwrap();
     let filename = format!("invoice_{:04}.pdf", id);

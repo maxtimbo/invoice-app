@@ -25,7 +25,7 @@ impl EmailService {
         let email = Message::builder()
             .from(from)
             .to(to)
-            .subject("invoice-cli: test email")
+            .subject("Invoice App: test email")
             .body("test email".to_string())
             .context("failed to build test email")?;
 

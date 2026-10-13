@@ -16,3 +16,6 @@ target/
 # Ignore any invoices created in the root dir during testing
 /*.html
 /*.pdf
+
+# Local data dir (database and invoice templates)
+/data/

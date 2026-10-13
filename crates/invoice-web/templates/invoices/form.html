@@ -104,62 +104,6 @@
 <script>
     const selected = {}; // id -> { name, rate, qty }
 
-    function closeQuickItem() {
-        document.getElementById('quick-item-modal').classList.remove('open');
-        document.getElementById('qi-name').value = '';
-        document.getElementById('qi-rate').value = '';
-        const err = document.getElementById('qi-error');
-        err.style.display = 'none';
-        err.textContent = '';
-    }
-
-    async function quickCreateItem() {
-        const name = document.getElementById('qi-name').value.trim();
-        const rate = document.getElementById('qi-rate').value.trim();
-        const err  = document.getElementById('qi-error');
-
-        if (!name || !rate) {
-            err.textContent = 'Name and rate are required.';
-            err.style.display = 'block';
-            return;
-        }
-
-        const body = new URLSearchParams({ name, rate });
-        const res  = await fetch('/items', { method: 'POST', body });
-
-        if (!res.ok) {
-            err.textContent = 'Failed to create item.';
-            err.style.display = 'block';
-            return;
-        }
-
-        const listRes = await fetch('/items');
-        const html    = await listRes.text();
-        const doc     = new DOMParser().parseFromString(html, 'text/html');
-        const rows    = doc.querySelectorAll('tbody tr');
-        const lastRow = rows[rows.length - 1];
-        const newName = lastRow?.querySelector('td a')?.textContent?.trim();
-        const newRate = lastRow?.querySelector('td:nth-child(2)')?.textContent?.trim();
-        const newHref = lastRow?.querySelector('td a')?.getAttribute('href') ?? '';
-        const newId   = newHref.split('/').pop();
-
-        if (!newId || !newName) {
-            err.textContent = 'Item created but could not refresh list.';
-            err.style.display = 'block';
-            return;
-        }
-
-        const sel = document.getElementById('item-select');
-        const opt = document.createElement('option');
-        opt.value        = newId;
-        opt.dataset.name = newName;
-        opt.dataset.rate = newRate;
-        opt.textContent  = `${newName} ($${newRate})`;
-        opt.selected     = true;
-        sel.appendChild(opt);
-
-        closeQuickItem();
-    }
 
     function addItem() {
         const sel = document.getElementById('item-select');
@@ -232,4 +176,5 @@
         renderTable();
     }
 </script>
+<script src="/static/quick-item.js"></script>
 {% endblock %}

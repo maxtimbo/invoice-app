@@ -1,44 +1,39 @@
-use anyhow::{Context, Error, Result};
-use directories::ProjectDirs;
+use anyhow::{Context, Result};
 use std::path::PathBuf;
 
-#[derive(Debug)]
+/// Environment variable naming the directory that holds the database and
+/// invoice templates. In Docker this points at the mounted volume.
+pub const DATA_DIR_ENV: &str = "INVOICE_DATA_DIR";
+const DEFAULT_DATA_DIR: &str = "data";
+
+#[derive(Debug, Clone)]
 pub struct Paths {
+    pub data: PathBuf,
     pub db: PathBuf,
     pub templates: PathBuf,
 }
 
 impl Paths {
     pub fn init() -> Result<Paths> {
-        let project_dirs = ProjectDirs::from("", "", "invoice-cli")
-            .ok_or_else(|| Error::msg("directory not found"))?;
+        let data: PathBuf = std::env::var_os(DATA_DIR_ENV)
+            .map(PathBuf::from)
+            .unwrap_or_else(|| PathBuf::from(DEFAULT_DATA_DIR));
+        std::fs::create_dir_all(&data)
+            .with_context(|| format!("Unable to create data dir: {:?}", &data))?;
 
-        // Create database path
-        let mut db_path: PathBuf = project_dirs.data_dir().into();
-        std::fs::create_dir_all(&db_path)
-            .with_context(|| format!("Unable to create project root dir: {:?}", &db_path))?;
-        db_path.push("invoice-cli.db");
+        let db = data.join("invoice.db");
 
-        // Create templates path
-        let mut templates: PathBuf = project_dirs.data_dir().into();
-        templates.push("templates");
+        let templates = data.join("templates");
         std::fs::create_dir_all(&templates)
             .with_context(|| format!("Unable to create templates dir: {:?}", &templates))?;
 
-        // Create defaults file if none exists
-        templates.push("default.html");
-        let existing_default = templates.is_file();
-        if !existing_default {
-            let default_html = include_str!("../templates/default.html");
-            std::fs::write(&templates, default_html).expect("Unable to create default.html");
+        // Seed the default template so users can customise it in the volume
+        let default = templates.join("default.html");
+        if !default.is_file() {
+            std::fs::write(&default, include_str!("../templates/default.html"))
+                .with_context(|| format!("Unable to create {:?}", &default))?;
         }
 
-        templates.pop();
-
-        let paths = Paths {
-            db: db_path,
-            templates: templates,
-        };
-        Ok(paths)
+        Ok(Paths { data, db, templates })
     }
 }

@@ -48,7 +48,13 @@ impl TemplateEngine {
 
         let url = format!("file://{}", tmp.canonicalize()?.display());
 
-        let browser = Browser::new(LaunchOptions::default_builder().build().unwrap())?;
+        // Chrome's sandbox is unavailable inside most containers
+        let sandbox = std::env::var_os("INVOICE_CHROME_NO_SANDBOX").is_none();
+        let options = LaunchOptions::default_builder()
+            .sandbox(sandbox)
+            .build()
+            .map_err(|e| Error::msg(format!("Invalid browser options: {e}")))?;
+        let browser = Browser::new(options)?;
         let tab = browser.new_tab()?;
         tab.navigate_to(&url)?.wait_until_navigated()?;
 

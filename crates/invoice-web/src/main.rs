@@ -2,6 +2,7 @@ mod state;
 mod routes;
 
 use anyhow::Result;
+use std::path::PathBuf;
 use std::sync::Arc;
 use axum::{Router, routing::get, response::Redirect};
 use invoice_storage::sqlite::SqliteStorage;
@@ -16,16 +17,23 @@ async fn main() -> Result<()> {
     let db = SqliteStorage::connect(paths.db.to_str().unwrap()).await?;
     db.migrate().await?;
 
-    let mut tera = Tera::new("crates/invoice-web/templates/**/*.html")?;
+    // Directory holding `templates/` and `static/`; defaults to the crate dir for local dev
+    let web_dir = std::env::var_os("INVOICE_WEB_DIR")
+        .map(PathBuf::from)
+        .unwrap_or_else(|| PathBuf::from(env!("CARGO_MANIFEST_DIR")));
+    let bind = std::env::var("INVOICE_BIND").unwrap_or_else(|_| "127.0.0.1:3000".into());
+
+    let mut tera = Tera::new(web_dir.join("templates/**/*.html").to_str().unwrap())?;
     tera.autoescape_on(vec!["html"]);
 
-    let state = Arc::new(AppState { db, tera });
+    let state = Arc::new(AppState { db, tera, paths });
 
     let app = Router::new()
         .route("/",                                     get(root))
 
         .route("/items",                                get(routes::items::list))
         .route("/items/new",                            get(routes::items::new_form).post(routes::items::create))
+        .route("/items/quick",                          axum::routing::post(routes::items::quick_create))
         .route("/items/{id}",                           get(routes::items::edit_form).post(routes::items::update))
         .route("/items/{id}/delete",                    axum::routing::post(routes::items::delete))
 
@@ -69,11 +77,11 @@ async fn main() -> Result<()> {
         .route("/settings/email",                       get(routes::settings::email_form).post(routes::settings::save_email_config))
         .route("/settings/email/test",                  axum::routing::post(routes::settings::test_email_config))
 
-        .nest_service("/static",                        ServeDir::new("crates/invoice-web/static"))
+        .nest_service("/static",                        ServeDir::new(web_dir.join("static")))
         .with_state(state);
 
-    println!("Listening on localhost:3000");
-    let listener = tokio::net::TcpListener::bind("127.0.0.1:3000").await?;
+    println!("Listening on {bind}");
+    let listener = tokio::net::TcpListener::bind(&bind).await?;
     axum::serve(listener, app).await?;
     Ok(())
 }
